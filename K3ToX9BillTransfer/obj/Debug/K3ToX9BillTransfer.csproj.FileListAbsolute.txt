@@ -1,0 +1,8 @@
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\bin\Debug\config.xml
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\bin\Debug\K3ToX9BillTransfer.dll.config
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\bin\Debug\K3ToX9BillTransfer.dll
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\bin\Debug\K3ToX9BillTransfer.pdb
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\obj\Debug\K3ToX9BillTransfer.UI.frmMessageSingle.resources
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\obj\Debug\K3ToX9BillTransfer.csproj.GenerateResource.Cache
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\obj\Debug\K3ToX9BillTransfer.dll
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\obj\Debug\K3ToX9BillTransfer.pdb

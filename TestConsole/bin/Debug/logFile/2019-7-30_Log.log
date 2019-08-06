@@ -1,0 +1,15 @@
+/*************************/
+【标准日志】:2019/7/30 16:29:39
+ -----------日志消息：X9对K3中间层拦截器执行异常，可将配置文件设置为‘Debug'进行详查定位！
+异常消息：
+	执行基类缺省拦截处理：ApprovedBefore事件。异常：
+	调用X9系统服务时，无法连接到远程服务器	
+异常对象来源：K3ToX9BillTransfer	
+异常堆栈：   在 K3ToX9BillTransfer.BasicProcessor.defaultEventHandle(String eventName, DocInfo docInfo, Boolean& rltFlag) 位置 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\BasicProcessor.cs:行号 173
+   在 K3ToX9BillTransfer.BasicProcessor.approvedBefore(DocInfo docInfo, Boolean& rltFlag) 位置 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\BasicProcessor.cs:行号 42
+   在 K3ToX9BillTransfer.InterceptHandler.handle(String k3Connection, Int32 transType, Int32 rob, Int64 operateID, Int64 eventID, Int64 interID, String billCode, String currUser, String data, Boolean& rltFlag) 位置 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\InterceptHandler.cs:行号 59---------------
+	K3传递数据内容：业务类型【10】；红蓝字【1】；触发事件【ApprovedBefore】；单据内码【1】；单据编码【PR0001】；额外数据【------fadsfadsf】；操作人【morningStar】 
+/*************************/
+【标准日志】:2019/7/30 16:29:43
+ -----------日志消息：K3ToX9拦截器执行结束,结果：False---------------
+	K3传递数据内容：业务类型【10】；红蓝字【1】；触发事件【ApprovedBefore】；单据内码【1】；单据编码【PR0001】；额外数据【------fadsfadsf】；操作人【morningStar】 
