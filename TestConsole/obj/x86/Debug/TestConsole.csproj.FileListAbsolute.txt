@@ -6,3 +6,5 @@ E:\MyProject\轩辕天恩\K3ToX9BillTransfer\TestConsole\obj\x86\Debug\TestConso
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\TestConsole\obj\x86\Debug\TestConsole.exe
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\TestConsole\obj\x86\Debug\TestConsole.pdb
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\TestConsole\bin\Debug\config.xml
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\TestConsole\obj\x86\Debug\TestConsole.exe
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\TestConsole\obj\x86\Debug\TestConsole.pdb
