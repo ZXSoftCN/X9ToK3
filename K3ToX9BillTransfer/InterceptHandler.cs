@@ -33,7 +33,7 @@ namespace K3ToX9BillTransfer
         public void handle(string k3Connection, int transType, int rob,long operateID, long eventID, long interID, string billCode,string currUser, string data, ref bool rltFlag)
         {
             bool bInnerRlt = true;
-            
+            //LogInfoHelp.Log(k3Connection, LOG_TYPE.LOG_DEBUG);
             K3DataParaInfo docInfo = new K3DataParaInfo()
             {
                 BillCode = billCode,

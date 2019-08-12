@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace K3ToX9BillTransfer.UI
 {
@@ -41,7 +42,15 @@ namespace K3ToX9BillTransfer.UI
         {
             instance.txtAllInfo.Text = detailMsg;
             instance.lbErrorInfo.Text = msg;
-            instance.ShowDialog();
+            Process[] procs = Process.GetProcessesByName("kdmain");
+            if (procs.Length != 0)
+            {
+                IntPtr hwnd = procs[0].MainWindowHandle;
+                //WindowWrapper类见下面
+                instance.ShowDialog(new WindowWrapper(hwnd)); //指定记事本为父窗体
+            }
+
+            //instance.ShowDialog();//MessageBoxOptions.ServiceNotifcation
         }
 
         private void frmMessageSingle_Load(object sender, EventArgs e)

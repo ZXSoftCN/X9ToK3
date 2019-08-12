@@ -74,6 +74,7 @@ namespace K3ToX9BillTransfer
             catch (Exception ex)
             {
                 //LogInfoHelp.infoLog(eventName, docInfo, string.Format("调用X9系统服务时，异常：{0}", ex.Message));
+                docInfo.Data = ex.Message;
                 cacheDocInfo(docInfo, busiConfig);
                 throw new Exception(string.Format("调用X9系统服务时，{0}", ex.Message),ex);
             }

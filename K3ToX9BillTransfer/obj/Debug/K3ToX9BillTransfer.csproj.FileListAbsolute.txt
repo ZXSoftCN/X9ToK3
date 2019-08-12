@@ -6,3 +6,4 @@ E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\obj\Debug\K3ToX9
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\obj\Debug\K3ToX9BillTransfer.csproj.GenerateResource.Cache
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\obj\Debug\K3ToX9BillTransfer.dll
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\obj\Debug\K3ToX9BillTransfer.pdb
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9BillTransfer\obj\Debug\K3ToX9BillTransfer.csprojResolveAssemblyReference.cache

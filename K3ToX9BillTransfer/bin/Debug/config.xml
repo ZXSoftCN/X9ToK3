@@ -2,13 +2,13 @@
 <config>
   <LogInfoType level="Debug"></LogInfoType>
   <Contrasts>
-    <K3TransTypeToX9BillType transType="71" rob="1" desc="采购订单">2</K3TransTypeToX9BillType>
-    <K3TransTypeToX9BillType transType="1007105" rob="1" desc="委外订单">3</K3TransTypeToX9BillType>
+    <K3TransTypeToX9BillType transType="71" rob="0" desc="采购订单">2</K3TransTypeToX9BillType>
+    <K3TransTypeToX9BillType transType="1007105" rob="0" desc="委外订单">3</K3TransTypeToX9BillType>
     <K3TransTypeToX9BillType transType="28" rob="1" desc="委外领料单→委外领料申请">15</K3TransTypeToX9BillType>
     <K3TransTypeToX9BillType transType="28" rob="-1" desc="红字委外领料单→委外退料单">16</K3TransTypeToX9BillType>
-    <K3TransTypeToX9BillType transType="81" rob="1" desc="销售订单→销售订单">4</K3TransTypeToX9BillType>
-    <K3TransTypeToX9BillType transType="83" rob="1" desc="发货单→销售发货通知">17</K3TransTypeToX9BillType>
-    <K3TransTypeToX9BillType transType="82" rob="1" desc="退货单→销售退货通知">18</K3TransTypeToX9BillType>
+    <K3TransTypeToX9BillType transType="81" rob="0" desc="销售订单→销售订单">4</K3TransTypeToX9BillType>
+    <K3TransTypeToX9BillType transType="83" rob="0" desc="发货单→销售发货通知">17</K3TransTypeToX9BillType>
+    <K3TransTypeToX9BillType transType="82" rob="0" desc="退货单→销售退货通知">18</K3TransTypeToX9BillType>
     <K3TransTypeToX9BillType transType="85" rob="1" desc="生产任务单→生产工单">5</K3TransTypeToX9BillType>
     <K3TransTypeToX9BillType transType="88" rob="1" desc="投料单→工单用料[IcClassType:-88]">7</K3TransTypeToX9BillType>
     <K3TransTypeToX9BillType transType="24" rob="1" desc="领料单→生产领料申请">8</K3TransTypeToX9BillType>

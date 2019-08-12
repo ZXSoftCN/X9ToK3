@@ -67,6 +67,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.map</DependentUpon>
     </Compile>
+    <Compile Include="WindowWrapper.cs" />
     <Compile Include="X9BusinessIntercept.cs" />
     <Compile Include="LogInfoHelp.cs" />
     <Compile Include="LOG_TYPE.cs" />
