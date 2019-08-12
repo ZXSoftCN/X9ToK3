@@ -8,3 +8,9 @@ E:\MyProject\轩辕天恩\K3ToX9BillTransfer\TestConsole\obj\x86\Debug\TestConso
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\TestConsole\bin\Debug\config.xml
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\TestConsole\obj\x86\Debug\TestConsole.exe
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\TestConsole\obj\x86\Debug\TestConsole.pdb
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\TestConsole\bin\Debug\config.xml
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\TestConsole\bin\Debug\TestConsole.exe
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\TestConsole\bin\Debug\TestConsole.pdb
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\TestConsole\bin\Debug\K3ToX9BillTransfer.dll
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\TestConsole\bin\Debug\K3ToX9BillTransfer.pdb
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\TestConsole\obj\x86\Debug\TestConsole.csprojResolveAssemblyReference.cache

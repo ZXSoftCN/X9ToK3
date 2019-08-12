@@ -7,3 +7,9 @@ E:\MyProject\EnglistPath\K3ToX9SqlCRL.dll.config
 E:\MyProject\EnglistPath\K3ToX9SqlCRL.dll
 E:\MyProject\EnglistPath\K3ToX9SqlCRL.pdb
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\K3ToX9SqlCRL\obj\Debug\K3ToX9SqlCRL.csprojResolveAssemblyReference.cache
+E:\MyProject\轩辕天恩\EnglistPath\K3ToX9SqlCRL.dll.config
+E:\MyProject\轩辕天恩\EnglistPath\K3ToX9SqlCRL.dll
+E:\MyProject\轩辕天恩\EnglistPath\K3ToX9SqlCRL.pdb
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\K3ToX9SqlCRL\obj\Debug\K3ToX9SqlCRL.csprojResolveAssemblyReference.cache
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\K3ToX9SqlCRL\obj\Debug\K3ToX9SqlCRL.dll
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\K3ToX9SqlCRL\obj\Debug\K3ToX9SqlCRL.pdb

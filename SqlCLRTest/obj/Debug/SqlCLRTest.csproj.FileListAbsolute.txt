@@ -5,3 +5,6 @@ E:\MyProject\轩辕天恩\K3ToX9BillTransfer\SqlCLRTest\obj\Debug\SqlCLRTest.pdb
 C:\Program Files (x86)\kingdee\K3ERP\CUS\SqlCLRTest.dll
 C:\Program Files (x86)\kingdee\K3ERP\CUS\SqlCLRTest.pdb
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\SqlCLRTest\obj\Debug\SqlCLRTest.csprojResolveAssemblyReference.cache
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\SqlCLRTest\obj\Debug\SqlCLRTest.csprojResolveAssemblyReference.cache
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\SqlCLRTest\obj\Debug\SqlCLRTest.dll
+E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\SqlCLRTest\obj\Debug\SqlCLRTest.pdb

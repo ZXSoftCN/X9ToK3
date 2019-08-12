@@ -1,4 +1,0 @@
-E:\MyProject\轩辕天恩\K3ToX9BillTransfer\ClassLibrary1\bin\Debug\ClassLibrary1.dll
-E:\MyProject\轩辕天恩\K3ToX9BillTransfer\ClassLibrary1\bin\Debug\ClassLibrary1.pdb
-E:\MyProject\轩辕天恩\K3ToX9BillTransfer\ClassLibrary1\obj\Debug\ClassLibrary1.dll
-E:\MyProject\轩辕天恩\K3ToX9BillTransfer\ClassLibrary1\obj\Debug\ClassLibrary1.pdb
