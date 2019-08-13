@@ -148,7 +148,6 @@ namespace K3ToX9SqlCRL
                     {
                         return;
                     }
-
                 }
             }
 
