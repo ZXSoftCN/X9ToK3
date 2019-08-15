@@ -21,6 +21,12 @@ namespace K3ToX9BillTransfer
         public long InterID { get; set; }
 
         /// <summary>
+        /// 单据明细行内码。在行关闭或行反关闭时会被赋值，其它动作下:EntryID=0.
+        /// </summary>
+        [XmlAttribute]
+        public int EntryID { get; set; }
+
+        /// <summary>
         /// 业务类型:通过K3数据表IcTranstype检索具体的业务类型。
         /// </summary>
         [XmlAttribute]

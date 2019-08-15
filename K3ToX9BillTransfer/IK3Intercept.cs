@@ -27,6 +27,16 @@ namespace K3ToX9BillTransfer
         bool approvedAfter(K3DataParaInfo docInfo);
         bool unApprovedBefore(K3DataParaInfo docInfo);
         bool unApprovedAfter(K3DataParaInfo docInfo);
+
+        bool closedBefore(K3DataParaInfo docInfo);
+        bool closedAfter(K3DataParaInfo docInfo);
+        bool unClosedBefore(K3DataParaInfo docInfo);
+        bool unClosedAfter(K3DataParaInfo docInfo);
+        bool entryClosedBefore(K3DataParaInfo docInfo);
+        bool entryClosedAfter(K3DataParaInfo docInfo);
+        bool unEntryClosedBefore(K3DataParaInfo docInfo);
+        bool unEntryClosedAfter(K3DataParaInfo docInfo);
+
         bool unKnownEvent(K3DataParaInfo docInfo);
     }
 }

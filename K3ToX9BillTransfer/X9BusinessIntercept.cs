@@ -48,6 +48,44 @@ namespace K3ToX9BillTransfer
         {
             return defaultEventHandle(InterceptEvent.UnApprovedAfter, docInfo, busiConfig);
         }
+
+        public override ResultInfo closedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
+        {
+            return defaultEventHandle(InterceptEvent.ClosedBefore, docInfo, busiConfig);
+        }
+        public override ResultInfo closedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
+        {
+            return defaultEventHandle(InterceptEvent.ClosedAfter, docInfo, busiConfig);
+        }
+
+        public override ResultInfo unClosedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
+        {
+            return defaultEventHandle(InterceptEvent.UnClosedBefore, docInfo, busiConfig);
+        }
+
+        public override ResultInfo unClosedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
+        {
+            return defaultEventHandle(InterceptEvent.UnClosedAfter, docInfo, busiConfig);
+        }
+        public override ResultInfo entryClosedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
+        {
+            return defaultEventHandle(InterceptEvent.EntryClosedBefore, docInfo, busiConfig);
+        }
+        public override ResultInfo entryClosedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
+        {
+            return defaultEventHandle(InterceptEvent.EntryClosedAfter, docInfo, busiConfig);
+        }
+
+        public override ResultInfo unEntryClosedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
+        {
+            return defaultEventHandle(InterceptEvent.UnEntryClosedBefore, docInfo, busiConfig);
+        }
+
+        public override ResultInfo unEntryClosedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
+        {
+            return defaultEventHandle(InterceptEvent.UnEntryClosedAfter, docInfo, busiConfig);
+        }
+
         public override ResultInfo unKnownExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
         {
             return defaultEventHandle(InterceptEvent.UnKnownEvent, docInfo, busiConfig);
@@ -67,6 +105,20 @@ namespace K3ToX9BillTransfer
                     //strRlt = strRlt.Replace(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"", "");
                     //string strHttpDecoding = HttpUtility.HtmlDecode(strRlt);
                     ResultInfo rltInfo = XmlSerializerHelper.XmlDeserialize<ResultInfo>(strRlt, Encoding.Unicode);
+                    //2019-8-13 修改为：返回结果IsSuccess为false，缓存当前结果。
+                    if (!rltInfo.IsSuccess)
+                    {
+                        StringBuilder strbError = new StringBuilder();
+                        foreach (var item in rltInfo.Errors)
+                        {
+                            if (!String.IsNullOrEmpty(item.ErrorText))
+                            {
+                                strbError.AppendLine(item.ErrorText);
+                            }
+                        }
+                        docInfo.Data = strbError.ToString();
+                        cacheDocInfo(docInfo, busiConfig);
+                    }
                     return rltInfo;
                 }
                 return null;

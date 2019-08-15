@@ -80,6 +80,18 @@ namespace K3ToX9BillTransfer
                 case 200003:
                     eventName = "审核退出前事件";
                     break;
+                case 300007:
+                    eventName = "关闭前事件";
+                    break;
+                case 300008:
+                    eventName = "关闭后事件";
+                    break;
+                case 300015:
+                    eventName = "行关闭前事件";
+                    break;
+                case 300016:
+                    eventName = "反行关闭后事件";
+                    break;
                 default:
                     break;
             }

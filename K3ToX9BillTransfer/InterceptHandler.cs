@@ -18,7 +18,8 @@ namespace K3ToX9BillTransfer
         static string strConfig = AppDomain.CurrentDomain.BaseDirectory + "config.xml";
 
         /// <summary>
-        /// 
+        /// Select FCheckCtlLevel, * From t_MultiCheckOption Where FBillType in (10,29) and FOptionValue = 20
+        /// select FStatus,FMultiCheckLevel1,FCurCheckLevel,* from icstockbill where FInterID = 2100
         /// </summary>
         /// <param name="k3Connection"></param>
         /// <param name="transType"></param>
@@ -30,7 +31,7 @@ namespace K3ToX9BillTransfer
         /// <param name="currUser"></param>
         /// <param name="data"></param>
         /// <param name="rltFlag">特别注意为false时，也就是执行失败时外部分布式事务会回滚所有的数据更新处理。</param>
-        public void handle(string k3Connection, int transType, int rob,long operateID, long eventID, long interID, string billCode,string currUser, string data, ref bool rltFlag)
+        public void handle(string k3Connection, int transType, int rob,long operateID, long eventID, long interID,int entryID, string billCode,string currUser, string data, ref bool rltFlag)
         {
             bool bInnerRlt = true;
             //LogInfoHelp.Log(k3Connection, LOG_TYPE.LOG_DEBUG);
@@ -38,6 +39,7 @@ namespace K3ToX9BillTransfer
             {
                 BillCode = billCode,
                 InterID = interID,
+                EntryID = entryID,
                 TransType = transType,
                 ROB = rob,
                 CurrentUser = currUser,
@@ -82,6 +84,30 @@ namespace K3ToX9BillTransfer
                         case InterceptEvent.UnApprovedAfter:
                             bInnerRlt = processor.unApprovedAfter(docInfo);
                             break;
+                        case InterceptEvent.ClosedBefore:
+                            bInnerRlt = processor.closedBefore(docInfo);
+                            break;
+                        case InterceptEvent.ClosedAfter:
+                            bInnerRlt = processor.closedAfter(docInfo);
+                            break;
+                        case InterceptEvent.UnClosedBefore:
+                            bInnerRlt = processor.unClosedBefore(docInfo);
+                            break;
+                        case InterceptEvent.UnClosedAfter:
+                            bInnerRlt = processor.unClosedAfter(docInfo);
+                            break;
+                        case InterceptEvent.EntryClosedBefore:
+                            bInnerRlt = processor.entryClosedBefore(docInfo);
+                            break;
+                        case InterceptEvent.EntryClosedAfter:
+                            bInnerRlt = processor.entryClosedAfter(docInfo);
+                            break;
+                        case InterceptEvent.UnEntryClosedBefore:
+                            bInnerRlt = processor.unEntryClosedBefore(docInfo);
+                            break;
+                        case InterceptEvent.UnEntryClosedAfter:
+                            bInnerRlt = processor.unEntryClosedAfter(docInfo);
+                            break;
                         default:
                             bInnerRlt = processor.unKnownEvent(docInfo);
                             break;
@@ -123,8 +149,8 @@ namespace K3ToX9BillTransfer
             }
             finally
             {
-                rltFlag = bInnerRlt;//最终将内部调用结果返回给K3中间件插件
-                LogInfoHelp.infoLog(InterceptEvent.ConvertToEventName(eventID, operateID), docInfo, string.Format("K3ToX9拦截器执行结束,结果：{0}", rltFlag.ToString()));
+                //rltFlag = bInnerRlt;//最终将内部调用结果返回给K3中间件插件 //不再中断K3动作 2019-8-13
+                LogInfoHelp.infoLog(InterceptEvent.ConvertToEventName(eventID, operateID), docInfo, string.Format("K3ToX9拦截器执行结束,结果：{0}", bInnerRlt.ToString()));
             }
         }
 

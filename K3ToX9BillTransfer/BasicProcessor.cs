@@ -5,6 +5,7 @@ using System.Text;
 using System.Xml;
 using System.Windows.Forms;
 using K3ToX9BillTransfer.UI;
+using System.Data.SqlClient;
 
 namespace K3ToX9BillTransfer
 {
@@ -57,6 +58,46 @@ namespace K3ToX9BillTransfer
             return defaultEventHandle(InterceptEvent.UnApprovedAfter, docInfo);
         }
 
+        public bool closedBefore(K3DataParaInfo docInfo)
+        {
+            return defaultEventHandle(InterceptEvent.ClosedBefore, docInfo);
+        }
+
+        public bool closedAfter(K3DataParaInfo docInfo)
+        {
+            return defaultEventHandle(InterceptEvent.ClosedAfter, docInfo);
+        }
+
+        public bool unClosedBefore(K3DataParaInfo docInfo)
+        {
+            return defaultEventHandle(InterceptEvent.UnClosedBefore, docInfo);
+        }
+
+        public bool unClosedAfter(K3DataParaInfo docInfo)
+        {
+            return defaultEventHandle(InterceptEvent.UnClosedAfter, docInfo);
+        }
+
+        public bool entryClosedBefore(K3DataParaInfo docInfo)
+        {
+            return defaultEventHandle(InterceptEvent.EntryClosedBefore, docInfo);
+        }
+
+        public bool entryClosedAfter(K3DataParaInfo docInfo)
+        {
+            return defaultEventHandle(InterceptEvent.EntryClosedAfter, docInfo);
+        }
+
+        public bool unEntryClosedBefore(K3DataParaInfo docInfo)
+        {
+            return defaultEventHandle(InterceptEvent.UnEntryClosedBefore, docInfo);
+        }
+
+        public bool unEntryClosedAfter(K3DataParaInfo docInfo)
+        {
+            return defaultEventHandle(InterceptEvent.UnEntryClosedAfter, docInfo);
+        }
+
         public bool unKnownEvent(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.UnKnownEvent, docInfo);
@@ -76,6 +117,18 @@ namespace K3ToX9BillTransfer
         public abstract ResultInfo unApprovedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
         public abstract ResultInfo unApprovedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
 
+        public abstract ResultInfo closedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
+        public abstract ResultInfo closedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
+
+        public abstract ResultInfo unClosedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
+        public abstract ResultInfo unClosedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
+
+        public abstract ResultInfo entryClosedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
+        public abstract ResultInfo entryClosedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
+
+        public abstract ResultInfo unEntryClosedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
+        public abstract ResultInfo unEntryClosedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
+        
         public abstract ResultInfo unKnownExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
         #endregion
 
@@ -94,9 +147,15 @@ namespace K3ToX9BillTransfer
                 LogInfoHelp.debugLog(eventName, docInfo, string.Format("进入基类{0}事件响应",eventName));
 
                 K3InterceptConfig itemConfig = validateBusinessEnable(docInfo, eventName);
+                
                 if (itemConfig != null)
                 {
                     LogInfoHelp.debugLog(eventName, docInfo, string.Format("进入X9系统业务校验事件{0}服务中", eventName));
+                    if (!isCalledFilter(itemConfig, docInfo))
+                    {
+                        LogInfoHelp.infoLog(eventName, docInfo, string.Format("X9系统业务校验事件{0}服务，单据【{1}]表头标记为“不进入X9系统”。", eventName,docInfo.InterID.ToString()));
+                        return false;
+                    }
                     ResultInfo rltInfo = null;
                     switch (eventName)
                     {
@@ -124,6 +183,30 @@ namespace K3ToX9BillTransfer
                         case InterceptEvent.UnApprovedAfter:
                             rltInfo = unApprovedAfterExtend(docInfo, itemConfig);
                             break;
+                        case InterceptEvent.ClosedBefore:
+                            rltInfo = closedBeforeExtend(docInfo, itemConfig);
+                            break;
+                        case InterceptEvent.ClosedAfter:
+                            rltInfo = closedAfterExtend(docInfo, itemConfig);
+                            break;
+                        case InterceptEvent.UnClosedBefore:
+                            rltInfo = unClosedBeforeExtend(docInfo, itemConfig);
+                            break;
+                        case InterceptEvent.UnClosedAfter:
+                            rltInfo = unClosedAfterExtend(docInfo, itemConfig);
+                            break;
+                        case InterceptEvent.EntryClosedBefore:
+                            rltInfo = entryClosedBeforeExtend(docInfo, itemConfig);
+                            break;
+                        case InterceptEvent.EntryClosedAfter:
+                            rltInfo = entryClosedAfterExtend(docInfo, itemConfig);
+                            break;
+                        case InterceptEvent.UnEntryClosedBefore:
+                            rltInfo = unEntryClosedBeforeExtend(docInfo, itemConfig);
+                            break;
+                        case InterceptEvent.UnEntryClosedAfter:
+                            rltInfo = unEntryClosedAfterExtend(docInfo, itemConfig);
+                            break;
                         default:
                             rltInfo = unKnownExtend(docInfo, itemConfig);
                             break;
@@ -136,7 +219,8 @@ namespace K3ToX9BillTransfer
                     }
                     else
                     {
-                        bRlt = rltInfo.IsSuccess;//返回结果对象是否校验通过。
+                        //bRlt = rltInfo.IsSuccess;//返回结果对象是否校验通过。2019-8-13 改为：不管X9服务认定是否通过，都不再中断K3动作。
+
                         LogInfoHelp.infoLog(eventName, docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为{1}。", eventName,rltInfo.IsSuccess.ToString()));
                         LogInfoHelp.debugLog(eventName, docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为{1}。", eventName, 
                             XmlSerializerHelper.XmlSerialize<ResultInfo>(rltInfo,Encoding.Unicode)));
@@ -220,6 +304,62 @@ namespace K3ToX9BillTransfer
                 }
             }
             return null; ;
+        }
+
+        /// <summary>
+        /// 所单据表头增加了“是否进X9”字段，并在zz_t_K3InterceptConfig配置表设置好对应字段则会进行过滤调用。
+        /// </summary>
+        /// <param name="itemConfig"></param>
+        /// <param name="docInfo"></param>
+        /// <returns></returns>
+        internal bool isCalledFilter(K3InterceptConfig itemConfig,K3DataParaInfo docInfo)
+        {
+            bool bRlt = true;
+            if (itemConfig == null || string.IsNullOrEmpty(itemConfig.ConditionTable) || string.IsNullOrEmpty(itemConfig.ConditionField) || string.IsNullOrEmpty(itemConfig.KeyField))
+            {
+                return bRlt;
+            }
+            using (SqlConnection sqlconn = new SqlConnection(ServiceConfig.Instance.K3ConnectString))
+            {
+                sqlconn.Open();
+                using (SqlCommand sqlcommExists = new SqlCommand(string.Format("select 1 from sys.columns where [object_id] = object_id('{0}') and name = '{1}'", itemConfig.ConditionTable, itemConfig.ConditionField), sqlconn))
+                {
+                    Object objIsExists = sqlcommExists.ExecuteScalar();
+                    if (objIsExists == null || Convert.ToInt32(objIsExists.ToString()) != 1)
+                    {
+                        return bRlt;
+                    }
+                }
+
+                using (SqlCommand sqlcommKeyExists = new SqlCommand(string.Format("select 1 from sys.columns where [object_id] = object_id('{0}') and name = '{1}'", itemConfig.ConditionTable, itemConfig.ConditionField), sqlconn))
+                {
+                    Object objIsExists = sqlcommKeyExists.ExecuteScalar();
+                    if (objIsExists == null || Convert.ToInt32(objIsExists.ToString()) != 1)
+                    {
+                        return bRlt;
+                    }
+                }
+
+                using (SqlCommand sqlcommCondition = new SqlCommand(string.Format("select isnull({1},'Y') from {0} where {2} = {3}", itemConfig.ConditionTable, itemConfig.ConditionField,itemConfig.KeyField,docInfo.InterID.ToString()), sqlconn))
+                {
+                    Object objValue = sqlcommCondition.ExecuteScalar();
+                    if (objValue == null)
+                    {
+                        return bRlt;
+                    }
+                    else
+                    {
+                        if (string.Equals("N",objValue.ToString(),StringComparison.OrdinalIgnoreCase) 
+                            || string.Equals("否",objValue.ToString(),StringComparison.OrdinalIgnoreCase)
+                            || string.Equals("false", objValue.ToString(), StringComparison.OrdinalIgnoreCase))
+                        {
+                            bRlt = false;
+                        }
+                    }
+                }
+            }
+
+            return bRlt;
         }
         
 

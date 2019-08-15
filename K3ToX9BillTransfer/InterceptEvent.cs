@@ -15,6 +15,11 @@ namespace K3ToX9BillTransfer
         public const string DeleteBefore = "DeleteBefore";//删除前
         public const string DeleteAfter = "DeleteAfter";//删除后
 
+        public const string FirstApprovedBefore = "FirstApprovedBefore";//一级审核前
+        public const string FirstApprovedAfter = "FirstApprovedAfter";//一级审核后
+        public const string UnFirstApprovedBefore = "UnFirstApprovedBefore";//一级弃审前
+        public const string UnFirstApprovedAfter = "UnFirstApprovedAfter";//一级弃审后
+
         public const string ApprovedBefore = "ApprovedBefore";//审核前
         public const string ApprovedAfter = "ApprovedAfter";//审核后
         public const string UnApprovedBefore = "UnApprovedBefore";//弃审前
@@ -24,6 +29,11 @@ namespace K3ToX9BillTransfer
         public const string ClosedAfter = "ClosedAfter";//关闭后
         public const string UnClosedBefore = "UnClosedBefore";//反关闭前
         public const string UnClosedAfter = "UnClosedAfter";//反关闭后
+
+        public const string EntryClosedBefore = "EntryClosedBefore";//行关闭前
+        public const string EntryClosedAfter = "EntryClosedAfter";//行关闭后
+        public const string UnEntryClosedBefore = "UnEntryClosedBefore";//反行关闭前
+        public const string UnEntryClosedAfter = "UnEntryClosedAfter";//反行关闭后
 
         public const string UnKnownEvent = "UnKnownEvent";//未知事件
 
@@ -95,6 +105,56 @@ namespace K3ToX9BillTransfer
                     return UnKnownEvent;
                 }
             }
+            else if (operateID == 64)
+            {
+                //关闭
+                if (eventID == 300007)
+                {
+                    return ClosedBefore;
+                }
+                else if (eventID == 300008)
+                {
+                    return ClosedAfter;
+                }
+                else if (eventID == 300015)
+                {
+                    //行关闭
+                    return EntryClosedBefore;
+                }
+                else if (eventID == 300016)
+                {
+                    return EntryClosedAfter;
+                }
+                else
+                {
+                    return UnKnownEvent;
+                }
+            }
+            else if (operateID == 128)
+            {
+                //反关闭
+                if (eventID == 300007)
+                {
+                    return UnClosedBefore;
+                }
+                else if (eventID == 300008)
+                {
+                    return UnClosedAfter;
+                }
+                else if (eventID == 300015)
+                {
+                    //反行关闭
+                    return UnEntryClosedBefore;
+                }
+                else if (eventID == 300016)
+                {
+                    return UnEntryClosedAfter;
+                }
+                else
+                {
+                    return UnKnownEvent;
+                }
+            }
             else
             {
                 return UnKnownEvent;
@@ -117,6 +177,18 @@ namespace K3ToX9BillTransfer
                     break;
                 case DeleteAfter:
                     eventName_CNZH = "删除后";
+                    break;
+                case FirstApprovedBefore:
+                    eventName_CNZH = "一级审核前";
+                    break;
+                case FirstApprovedAfter:
+                    eventName_CNZH = "一级审核后";
+                    break;
+                case UnFirstApprovedBefore:
+                    eventName_CNZH = "一级弃审前";
+                    break;
+                case UnFirstApprovedAfter:
+                    eventName_CNZH = "一级弃审后";
                     break;
                 case ApprovedBefore:
                     eventName_CNZH = "审核前";

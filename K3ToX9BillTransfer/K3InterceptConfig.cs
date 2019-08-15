@@ -32,6 +32,15 @@ namespace K3ToX9BillTransfer
         public string ServiceMethod { get; set; }//服务方法名
 
         [XmlAttribute]
+        public string ConditionTable { get; set; }//判断当前数据是否进行X9系统服务校验的后台表名
+
+        [XmlAttribute]
+        public string ConditionField { get; set; }//判断当前数据是否进行X9系统服务校验的后台字段名
+
+        [XmlAttribute]
+        public string KeyField { get; set; }//判断当前数据是否进行X9系统服务校验的后台表主键列名
+
+        [XmlAttribute]
         public string Notes { get; set; }//描述
 
         [XmlAttribute]

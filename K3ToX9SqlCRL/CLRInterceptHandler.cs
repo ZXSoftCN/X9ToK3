@@ -99,6 +99,7 @@ namespace K3ToX9SqlCRL
                 {
                     BillCode = billCode,
                     InterID = interID,
+                    EntryID = 0,
                     TransType = 85,
                     ROB = 1,
                     CurrentUser = "X9Validator",
@@ -128,6 +129,7 @@ namespace K3ToX9SqlCRL
                 {
                     BillCode = billCode,
                     InterID = interID,
+                    EntryID = 0,
                     TransType = 85,
                     ROB = 1,
                     CurrentUser = "X9Validator",
@@ -223,6 +225,7 @@ namespace K3ToX9SqlCRL
                 {
                     BillCode = billCode,
                     InterID = interID,
+                    EntryID = 0,
                     TransType = 88,
                     ROB = 1,
                     CurrentUser = "X9Validator",
@@ -252,6 +255,7 @@ namespace K3ToX9SqlCRL
                 {
                     BillCode = billCode,
                     InterID = interID,
+                    EntryID = 0,
                     TransType = 88,
                     ROB = 1,
                     CurrentUser = "X9Validator",
@@ -296,12 +300,17 @@ namespace K3ToX9SqlCRL
                 //};
                 if (itemConfig != null)
                 {
+                    if (!isCalledFilter(itemConfig, docInfo))
+                    {
+                        infoLogger(docInfo, string.Format("X9系统业务校验事件{0}服务，单据【{1}]表头标记为“不进入X9系统”。", docInfo.EventName, docInfo.InterID.ToString()));
+                        return true;//直接返回，不再调用X9服务。
+                    }
                     ResultInfo rltInfo = defaultEventHandle(docInfo, itemConfig);
                     if (rltInfo != null)
                     {
-                        bRlt = rltInfo.IsSuccess;
+                        //bRlt = rltInfo.IsSuccess;//2019-8-13 改为：不管X9服务认定是否通过，都不再中断K3动作。
+                        infoLogger(docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为{1}。", docInfo.EventName, rltInfo.IsSuccess.ToString()));
                     }
-                    infoLogger(docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为{1}。", docInfo.EventName, rltInfo.IsSuccess.ToString()));
                 }
                 else
                 {
@@ -327,22 +336,83 @@ namespace K3ToX9SqlCRL
                 K3InterceptConfig itemConfig = validateBusinessEnable(docInfo);
                 if (itemConfig != null)
                 {
+                    if (!isCalledFilter(itemConfig, docInfo))
+                    {
+                        infoLogger(docInfo, string.Format("X9系统业务校验事件{0}服务，单据【{1}]表头标记为“不进入X9系统”。", docInfo.EventName, docInfo.InterID.ToString()));
+                        return true;//直接返回，不再调用X9服务。
+                    }
                     ResultInfo rltInfo = defaultEventHandle(docInfo, itemConfig);
                     if (rltInfo != null)
                     {
-                        bRlt = rltInfo.IsSuccess;
+                        //bRlt = rltInfo.IsSuccess;//2019-8-13 改为：不管X9服务认定是否通过，都不再中断K3动作。
                         infoLogger(docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为{1}。", docInfo.EventName, rltInfo.IsSuccess.ToString()));
                     }
-                    else
-                    {
-                        infoLogger(docInfo, string.Format("未启用X9系统对K3事件{0}的拦截", docInfo.EventName));
-                    }
+                }
+                else
+                {
+                    infoLogger(docInfo, string.Format("未启用X9系统对K3事件{0}的拦截", docInfo.EventName));
                 }
             }
             catch (Exception ex)
             {
                 infoLogger(docInfo, string.Format("执行基类缺省拦截处理：{0}事件。异常：{1}", docInfo.EventName, ex.Message));
                 bRlt = true;
+            }
+
+            return bRlt;
+        }
+
+        /// <summary>
+        /// 所单据表头增加了“是否进X9”字段，并在zz_t_K3InterceptConfig配置表设置好对应字段则会进行过滤调用。
+        /// </summary>
+        /// <param name="itemConfig"></param>
+        /// <param name="docInfo"></param>
+        /// <returns></returns>
+        internal static bool isCalledFilter(K3InterceptConfig itemConfig, K3DataParaInfo docInfo)
+        {
+            bool bRlt = true;
+            if (itemConfig == null || string.IsNullOrEmpty(itemConfig.ConditionTable) || string.IsNullOrEmpty(itemConfig.ConditionField) || string.IsNullOrEmpty(itemConfig.KeyField))
+            {
+                return bRlt;
+            }
+            using (SqlConnection sqlconn = new SqlConnection(@"context connection=true"))
+            {
+                sqlconn.Open();
+                using (SqlCommand sqlcommExists = new SqlCommand(string.Format("select 1 from sys.columns where [object_id] = object_id('{0}') and name = '{1}'", itemConfig.ConditionTable, itemConfig.ConditionField), sqlconn))
+                {
+                    Object objIsExists = sqlcommExists.ExecuteScalar();
+                    if (objIsExists == null || Convert.ToInt32(objIsExists.ToString()) != 1)
+                    {
+                        return bRlt;
+                    }
+                }
+
+                using (SqlCommand sqlcommKeyExists = new SqlCommand(string.Format("select 1 from sys.columns where [object_id] = object_id('{0}') and name = '{1}'", itemConfig.ConditionTable, itemConfig.ConditionField), sqlconn))
+                {
+                    Object objIsExists = sqlcommKeyExists.ExecuteScalar();
+                    if (objIsExists == null || Convert.ToInt32(objIsExists.ToString()) != 1)
+                    {
+                        return bRlt;
+                    }
+                }
+
+                using (SqlCommand sqlcommCondition = new SqlCommand(string.Format("select isnull({1},'Y') from {0} where {2} = {3}", itemConfig.ConditionTable, itemConfig.ConditionField, itemConfig.KeyField, docInfo.InterID.ToString()), sqlconn))
+                {
+                    Object objValue = sqlcommCondition.ExecuteScalar();
+                    if (objValue == null)
+                    {
+                        return bRlt;
+                    }
+                    else
+                    {
+                        if (string.Equals("N", objValue.ToString(), StringComparison.OrdinalIgnoreCase)
+                            || string.Equals("否", objValue.ToString(), StringComparison.OrdinalIgnoreCase)
+                            || string.Equals("false", objValue.ToString(), StringComparison.OrdinalIgnoreCase))
+                        {
+                            bRlt = false;
+                        }
+                    }
+                }
             }
 
             return bRlt;
@@ -396,6 +466,19 @@ namespace K3ToX9SqlCRL
                     //strRlt = strRlt.Replace(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"", "");
                     //string strHttpDecoding = HttpUtility.HtmlDecode(strRlt);
                     ResultInfo rltInfo = XmlDeserialize<ResultInfo>(strRlt, Encoding.Unicode);
+                    if (!rltInfo.IsSuccess)
+                    {
+                        StringBuilder strbError = new StringBuilder();
+                        foreach (var item in rltInfo.Errors)
+                        {
+                            if (!String.IsNullOrEmpty(item.ErrorText))
+                            {
+                                strbError.AppendLine(item.ErrorText);
+                            }
+                        }
+                        docInfo.Data = strbError.ToString();
+                        cacheDocInfo(docInfo, busiConfig);
+                    }
                     return rltInfo;
                 }
                 return null;
@@ -511,7 +594,7 @@ namespace K3ToX9SqlCRL
                 }
             }
         }
-
+        
         public static K3InterceptConfig validateBusinessEnable(K3DataParaInfo docInfo)
         {
             SqlPipe pipe = SqlContext.Pipe;
