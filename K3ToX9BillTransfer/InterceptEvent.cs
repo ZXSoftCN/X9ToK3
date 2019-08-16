@@ -39,6 +39,106 @@ namespace K3ToX9BillTransfer
 
         private InterceptEvent() { }
 
+        public static string ConvertToEventName(long eventID, long operateID, int checkLevel,int currentLevel)
+        {
+            //当不是审核或反审核时，不判断多级审核。
+            if (operateID != 1 && operateID != 2)
+            {
+                return ConvertToEventName(eventID, operateID);
+            }
+            
+            //只有启用多级审核的单据，才区分一级审核和终审。
+            if (checkLevel == 0)
+            {
+                return ConvertToEventName(eventID, operateID);
+            }
+            else
+            {
+                if (operateID == 1)
+                {
+                    //审核
+                    if (eventID == 200001)
+                    {
+                        //审核前currentLevel还未更新
+                        if (currentLevel == checkLevel - 1)
+                        {
+                            return ApprovedBefore;
+                        }
+                        else if (currentLevel == 0)
+                        {
+                            return FirstApprovedBefore;
+                        }
+                        else
+                        {
+                            return UnKnownEvent;
+                        }
+                    }
+                    else if (eventID == 200003)
+                    {
+                        //审核后currentLevel已更新
+                        if (currentLevel == checkLevel)
+                        {
+                            return ApprovedAfter;
+                        }
+                        else if (currentLevel == 1)
+                        {
+                            return FirstApprovedAfter;
+                        }
+                        else
+                        {
+                            return UnKnownEvent;
+                        }
+                    }
+                    else
+                    {
+                        return UnKnownEvent;
+                    }
+                }
+                else if (operateID == 2)
+                {
+                    //反审核
+                    if (eventID == 200001)
+                    {
+                        if (currentLevel == checkLevel)
+                        {
+                            return UnApprovedBefore;
+                        }
+                        else if (currentLevel == 1)
+                        {
+                            return UnFirstApprovedBefore;
+                        }
+                        else
+                        {
+                            return UnKnownEvent;
+                        }
+                    }
+                    else if (eventID == 200003)
+                    {
+                        if (currentLevel == checkLevel - 1)
+                        {
+                            return UnApprovedAfter;
+                        }
+                        else if (currentLevel == 0)
+                        {
+                            return UnFirstApprovedAfter;
+                        }
+                        else
+                        {
+                            return UnKnownEvent;
+                        }
+                    }
+                    else
+                    {
+                        return UnKnownEvent;
+                    }
+                }
+                else
+                {
+                    return UnKnownEvent;
+                }
+            }
+        }
+
         public static string ConvertToEventName(long eventID,long operateID)
         {
             if (operateID == 4)
@@ -201,6 +301,18 @@ namespace K3ToX9BillTransfer
                     break;
                 case UnApprovedAfter:
                     eventName_CNZH = "弃审后";
+                    break;
+                case EntryClosedBefore:
+                    eventName_CNZH = "行关闭前";
+                    break;
+                case EntryClosedAfter:
+                    eventName_CNZH = "行关闭后";
+                    break;
+                case UnEntryClosedBefore:
+                    eventName_CNZH = "反行关闭前";
+                    break;
+                case UnEntryClosedAfter:
+                    eventName_CNZH = "反行关闭后";
                     break;
                 case ClosedBefore:
                     eventName_CNZH = "关闭前";

@@ -73,6 +73,14 @@ namespace K3ToX9BillTransfer
             LogInfoHelp.GetInstance().WriteInfoToLogFile(loginfo, logType);
         }
 
+        public static void logOnlyDebug(string loginfo)
+        {
+            if (CommonFunc.ConfigLogType >= LOG_TYPE.LOG_DEBUG)
+            {
+                Log(loginfo, CommonFunc.ConfigLogType);
+            }
+        }
+
         /// <summary>
         /// 日志级别高于等于LOG_DEBUG，进行日志记录
         /// </summary>
@@ -87,7 +95,6 @@ namespace K3ToX9BillTransfer
 
                 Log(strPreLog, CommonFunc.ConfigLogType);
             }
-
         }
 
         /// <summary>

@@ -30,6 +30,24 @@ namespace K3ToX9BillTransfer
         {
             return defaultEventHandle(InterceptEvent.DeleteAfter, docInfo, busiConfig);
         }
+
+
+        public override ResultInfo firstApprovedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
+        {
+            return defaultEventHandle(InterceptEvent.ApprovedBefore, docInfo, busiConfig);
+        }
+        public override ResultInfo firstApprovedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
+        {
+            return defaultEventHandle(InterceptEvent.ApprovedAfter, docInfo, busiConfig);
+        }
+        public override ResultInfo unFirstApprovedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
+        {
+            return defaultEventHandle(InterceptEvent.UnApprovedBefore, docInfo, busiConfig);
+        }
+        public override ResultInfo unFirstApprovedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
+        {
+            return defaultEventHandle(InterceptEvent.UnApprovedAfter, docInfo, busiConfig);
+        }
         public override ResultInfo approvedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
         {
             return defaultEventHandle(InterceptEvent.ApprovedBefore,docInfo, busiConfig);
@@ -38,16 +56,15 @@ namespace K3ToX9BillTransfer
         {
             return defaultEventHandle(InterceptEvent.ApprovedAfter, docInfo, busiConfig);
         }
-
         public override ResultInfo unApprovedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
         {
             return defaultEventHandle(InterceptEvent.UnApprovedBefore, docInfo, busiConfig);
         }
-
         public override ResultInfo unApprovedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
         {
             return defaultEventHandle(InterceptEvent.UnApprovedAfter, docInfo, busiConfig);
         }
+
 
         public override ResultInfo closedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
         {
@@ -57,12 +74,10 @@ namespace K3ToX9BillTransfer
         {
             return defaultEventHandle(InterceptEvent.ClosedAfter, docInfo, busiConfig);
         }
-
         public override ResultInfo unClosedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
         {
             return defaultEventHandle(InterceptEvent.UnClosedBefore, docInfo, busiConfig);
         }
-
         public override ResultInfo unClosedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
         {
             return defaultEventHandle(InterceptEvent.UnClosedAfter, docInfo, busiConfig);
@@ -75,17 +90,14 @@ namespace K3ToX9BillTransfer
         {
             return defaultEventHandle(InterceptEvent.EntryClosedAfter, docInfo, busiConfig);
         }
-
         public override ResultInfo unEntryClosedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
         {
             return defaultEventHandle(InterceptEvent.UnEntryClosedBefore, docInfo, busiConfig);
         }
-
         public override ResultInfo unEntryClosedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
         {
             return defaultEventHandle(InterceptEvent.UnEntryClosedAfter, docInfo, busiConfig);
         }
-
         public override ResultInfo unKnownExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
         {
             return defaultEventHandle(InterceptEvent.UnKnownEvent, docInfo, busiConfig);

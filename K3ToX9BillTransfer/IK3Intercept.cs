@@ -23,6 +23,11 @@ namespace K3ToX9BillTransfer
         bool addAfter(K3DataParaInfo docInfo);
         bool deleteBefore(K3DataParaInfo docInfo);
         bool deleteAfter(K3DataParaInfo docInfo);
+
+        bool firstApprovedBefore(K3DataParaInfo docInfo);
+        bool firstApprovedAfter(K3DataParaInfo docInfo);
+        bool unFirstApprovedBefore(K3DataParaInfo docInfo);
+        bool unFirstApprovedAfter(K3DataParaInfo docInfo);
         bool approvedBefore(K3DataParaInfo docInfo);
         bool approvedAfter(K3DataParaInfo docInfo);
         bool unApprovedBefore(K3DataParaInfo docInfo);

@@ -18,5 +18,7 @@
     <K3TransTypeToX9BillType transType="10" rob="1" desc="其他入库单→其他入库申请单">12</K3TransTypeToX9BillType>
     <K3TransTypeToX9BillType transType="10" rob="-1" desc="红字其他入库单→X9为其他出库单">13</K3TransTypeToX9BillType>
     <K3TransTypeToX9BillType transType="41" rob="1" desc="调拨单 →调拨申请">19</K3TransTypeToX9BillType>
+    <K3TransTypeToX9BillType transType="72" rob="0" desc="(采购/委外)收料通知单→收料通知">20</K3TransTypeToX9BillType>
+    <K3TransTypeToX9BillType transType="73" rob="0" desc="(采购/委外)退料通知单→退料通知">21</K3TransTypeToX9BillType>
   </Contrasts>
 </config>

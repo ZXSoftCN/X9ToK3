@@ -92,8 +92,8 @@ namespace K3ToX9SqlCRL
 
                 reader.Close();
             }
-            //结案时
-            if (insFStatus == 3 && delFStatus != 3)
+            #region 下达时
+            if (insFStatus == 1 && delFStatus != 1)
             {
                 K3DataParaInfo docInfo = new K3DataParaInfo()
                 {
@@ -104,10 +104,10 @@ namespace K3ToX9SqlCRL
                     ROB = 1,
                     CurrentUser = "X9Validator",
                     X9BillType = 5,
-                    EventName = "ClosedBefore",
+                    EventName = "ApprovedBefore",
                     Data = "",
                 };
-                if (!icmoClosedHandle(docInfo))
+                if (!basicHandle(docInfo))
                 {
                     try
                     {
@@ -122,6 +122,71 @@ namespace K3ToX9SqlCRL
 
                 }
             }
+            #endregion
+            #region 反下达时
+            if (delFStatus == 1 && insFStatus != 1)
+            {
+                K3DataParaInfo docInfo = new K3DataParaInfo()
+                {
+                    BillCode = billCode,
+                    InterID = interID,
+                    EntryID = 0,
+                    TransType = 85,
+                    ROB = 1,
+                    CurrentUser = "X9Validator",
+                    X9BillType = 5,
+                    EventName = "UnApprovedBefore",
+                    Data = "",
+                };
+                if (!basicHandle(docInfo))
+                {
+                    try
+                    {
+                        // Get the current transaction and roll it back.
+                        Transaction trans = Transaction.Current;
+                        trans.Rollback();
+                    }
+                    catch (SqlException ex)
+                    {
+                        return;
+                    }
+
+                }
+            }
+            #endregion
+
+
+            #region 结案时
+            if (insFStatus == 3 && delFStatus != 3)
+            {
+                K3DataParaInfo docInfo = new K3DataParaInfo()
+                {
+                    BillCode = billCode,
+                    InterID = interID,
+                    EntryID = 0,
+                    TransType = 85,
+                    ROB = 1,
+                    CurrentUser = "X9Validator",
+                    X9BillType = 5,
+                    EventName = "ClosedBefore",
+                    Data = "",
+                };
+                if (!basicHandle(docInfo))
+                {
+                    try
+                    {
+                        // Get the current transaction and roll it back.
+                        Transaction trans = Transaction.Current;
+                        trans.Rollback();
+                    }
+                    catch (SqlException ex)
+                    {
+                        return;
+                    }
+                }
+            }
+            #endregion
+
             //反结案时
             if (delFStatus == 3 && insFStatus != 3)
             {
@@ -138,7 +203,7 @@ namespace K3ToX9SqlCRL
                     Data = "",
                 };
 
-                if (!icmoClosedHandle(docInfo))
+                if (!basicHandle(docInfo))
                 {
                     try
                     {
@@ -155,12 +220,14 @@ namespace K3ToX9SqlCRL
 
         }
 
+        //特别注重：考虑到X9系统，对委外投料和工单投料需要区分业务类型，这里通过字段FType进行区分（1067——委外订单、1054——生产任务单）
         [Microsoft.SqlServer.Server.SqlTrigger(Name = @"zz_tr_PPBOM_X9Validate", Target = "PPBOM", Event = "FOR UPDATE")]
         public static void trPPBOMX9Validate()
         {
             string billCode = string.Empty;
             long interID = 0L;
             int insFStatus, delFStatus;
+            int typeID = 0;
             bool bCheckTriggerCol = false;
             SqlTriggerContext triggContext = SqlContext.TriggerContext;
             SqlPipe pipe = SqlContext.Pipe;
@@ -198,6 +265,7 @@ namespace K3ToX9SqlCRL
                 billCode = (string)reader["FBillNo"].ToString();
                 interID = Convert.ToInt64(reader["FInterID"].ToString());
                 insFStatus = Convert.ToInt32(reader["FStatus"].ToString());
+                typeID = Convert.ToInt32(reader["FTypeID"].ToString());
 
                 reader.Close();
             }
@@ -229,11 +297,11 @@ namespace K3ToX9SqlCRL
                     TransType = 88,
                     ROB = 1,
                     CurrentUser = "X9Validator",
-                    X9BillType = 7,
+                    X9BillType = typeID == 1067 ? 23 : 7,//根据typeID区分是工单投料，还是委外投料。
                     EventName = "ApprovedBefore",
                     Data = "",
                 };
-                if (!icmoClosedHandle(docInfo))
+                if (!basicHandle(docInfo))
                 {
                     try
                     {
@@ -245,7 +313,6 @@ namespace K3ToX9SqlCRL
                     {
                         return;
                     }
-
                 }
             }
             //弃审时
@@ -259,12 +326,12 @@ namespace K3ToX9SqlCRL
                     TransType = 88,
                     ROB = 1,
                     CurrentUser = "X9Validator",
-                    X9BillType = 7,
+                    X9BillType = typeID == 1067 ? 23 : 7,//根据typeID区分是工单投料，还是委外投料。
                     EventName = "UnApprovedBefore",
                     Data = "",
                 };
 
-                if (!ppbomApprovedHandle(docInfo))
+                if (!basicHandle(docInfo))
                 {
                     try
                     {
@@ -276,14 +343,263 @@ namespace K3ToX9SqlCRL
                     {
                         return;
                     }
-
                 }
             }
 
         }
 
-        //生产任务单结案、反结案一并处理。
-        private static bool icmoClosedHandle(K3DataParaInfo docInfo)
+        [Microsoft.SqlServer.Server.SqlTrigger(Name = @"zz_tr_OMOrder_Closed", Target = "IcSubContract", Event = "FOR UPDATE")]
+        public static void trOMOrderClosed()
+        {
+            string billCode = string.Empty;
+            long interID = 0L;
+            int insFClosed, delFClosed;
+            bool bCheckTriggerCol = false;
+            SqlTriggerContext triggContext = SqlContext.TriggerContext;
+            SqlPipe pipe = SqlContext.Pipe;
+            SqlDataReader reader;
+
+            initialConfig();
+
+            #region 只有委外订单关闭时触发
+            using (SqlConnection connection = new SqlConnection(@"context connection=true"))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand(@"SELECT * FROM INSERTED;", connection);
+                reader = command.ExecuteReader();
+                reader.Read();
+                if (reader == null || reader.HasRows == false)
+                {
+                    return;
+                }
+                for (int columnNumber = 0; columnNumber < triggContext.ColumnCount; columnNumber++)
+                {
+                    if (reader.GetName(columnNumber).Equals("FClosed", StringComparison.InvariantCultureIgnoreCase) && triggContext.IsUpdatedColumn(columnNumber))
+                    {
+                        bCheckTriggerCol = true;
+                    }
+                    //pipe.Send("Updated column "
+                    //   + reader.GetName(columnNumber) + "? "
+                    //   + triggContext.IsUpdatedColumn(columnNumber).ToString());
+                }
+                pipe.Send(bCheckTriggerCol.ToString());
+                if (!bCheckTriggerCol)
+                {
+                    return;
+                }
+
+                billCode = (string)reader["FBillNo"].ToString();
+                interID = Convert.ToInt64(reader["FInterID"].ToString());
+                insFClosed = Convert.ToInt32(reader["FClosed"].ToString());
+
+                reader.Close();
+            }
+
+            #endregion
+
+            using (SqlConnection connection = new SqlConnection(@"context connection=true"))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand(@"SELECT * FROM DELETED;", connection);
+                reader = command.ExecuteReader();
+                reader.Read();
+                if (reader == null || reader.HasRows == false)
+                {
+                    return;
+                }
+                delFClosed = Convert.ToInt32(reader["FClosed"].ToString());
+
+                reader.Close();
+            }
+            //关闭时
+            if (insFClosed == 1 && delFClosed == 0)
+            {
+                K3DataParaInfo docInfo = new K3DataParaInfo()
+                {
+                    BillCode = billCode,
+                    InterID = interID,
+                    EntryID = 0,
+                    TransType = 1007105,
+                    ROB = 0,
+                    CurrentUser = "X9Validator",
+                    X9BillType = 3,
+                    EventName = "ClosedBefore",
+                    Data = "",
+                };
+                if (!basicHandle(docInfo))
+                {
+                    try
+                    {
+                        // Get the current transaction and roll it back.
+                        Transaction trans = Transaction.Current;
+                        trans.Rollback();
+                    }
+                    catch (SqlException ex)
+                    {
+                        return;
+                    }
+                }
+            }
+            //反关闭时
+            if (delFClosed == 1 && insFClosed == 0)
+            {
+                K3DataParaInfo docInfo = new K3DataParaInfo()
+                {
+                    BillCode = billCode,
+                    InterID = interID,
+                    EntryID = 0,
+                    TransType = 1007105,
+                    ROB = 0,
+                    CurrentUser = "X9Validator",
+                    X9BillType = 3,
+                    EventName = "UnClosedBefore",
+                    Data = "",
+                };
+
+                if (!basicHandle(docInfo))
+                {
+                    try
+                    {
+                        // Get the current transaction and roll it back.
+                        Transaction trans = Transaction.Current;
+                        trans.Rollback();
+                    }
+                    catch (SqlException ex)
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+
+        [Microsoft.SqlServer.Server.SqlTrigger(Name = @"zz_tr_OMOrder_EntryClosed", Target = "IcSubContractEntry", Event = "FOR UPDATE")]
+        public static void trOMOrderEntryClosed()
+        {
+            string billCode = string.Empty;
+            long interID = 0L;
+            int entryID = 0;
+            int insFClosed, delFClosed;
+            bool bCheckTriggerCol = false;
+            SqlTriggerContext triggContext = SqlContext.TriggerContext;
+            SqlPipe pipe = SqlContext.Pipe;
+            SqlDataReader reader;
+
+            initialConfig();
+
+            #region 只有委外订单行关闭时触发
+            using (SqlConnection connection = new SqlConnection(@"context connection=true"))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand(@"SELECT * FROM INSERTED;", connection);
+                reader = command.ExecuteReader();
+                reader.Read();
+                if (reader == null || reader.HasRows == false)
+                {
+                    return;
+                }
+                for (int columnNumber = 0; columnNumber < triggContext.ColumnCount; columnNumber++)
+                {
+                    if (reader.GetName(columnNumber).Equals("FMrpClosed", StringComparison.InvariantCultureIgnoreCase) && triggContext.IsUpdatedColumn(columnNumber))
+                    {
+                        bCheckTriggerCol = true;
+                    }
+                    //pipe.Send("Updated column "
+                    //   + reader.GetName(columnNumber) + "? "
+                    //   + triggContext.IsUpdatedColumn(columnNumber).ToString());
+                }
+                pipe.Send(bCheckTriggerCol.ToString());
+                if (!bCheckTriggerCol)
+                {
+                    return;
+                }
+
+                billCode = string.Empty;
+                interID = Convert.ToInt64(reader["FInterID"].ToString());
+                entryID = Convert.ToInt32(reader["FEntryID"].ToString());
+                insFClosed = Convert.ToInt32(reader["FMrpClosed"].ToString());
+
+                reader.Close();
+            }
+
+            #endregion
+
+            using (SqlConnection connection = new SqlConnection(@"context connection=true"))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand(@"SELECT * FROM DELETED;", connection);
+                reader = command.ExecuteReader();
+                reader.Read();
+                if (reader == null || reader.HasRows == false)
+                {
+                    return;
+                }
+                delFClosed = Convert.ToInt32(reader["FMrpClosed"].ToString());
+
+                reader.Close();
+            }
+            //行关闭时
+            if (insFClosed == 1 && delFClosed == 0)
+            {
+                K3DataParaInfo docInfo = new K3DataParaInfo()
+                {
+                    BillCode = billCode,
+                    InterID = interID,
+                    EntryID = entryID,
+                    TransType = 1007105,
+                    ROB = 0,
+                    CurrentUser = "X9Validator",
+                    X9BillType = 3,
+                    EventName = "EntryClosedBefore",
+                    Data = "",
+                };
+                if (!basicHandle(docInfo))
+                {
+                    try
+                    {
+                        // Get the current transaction and roll it back.
+                        Transaction trans = Transaction.Current;
+                        trans.Rollback();
+                    }
+                    catch (SqlException ex)
+                    {
+                        return;
+                    }
+                }
+            }
+            //反关闭时
+            if (delFClosed == 1 && insFClosed == 0)
+            {
+                K3DataParaInfo docInfo = new K3DataParaInfo()
+                {
+                    BillCode = billCode,
+                    InterID = interID,
+                    EntryID = entryID,
+                    TransType = 1007105,
+                    ROB = 0,
+                    CurrentUser = "X9Validator",
+                    X9BillType = 3,
+                    EventName = "UnEntryClosedBefore",
+                    Data = "",
+                };
+
+                if (!basicHandle(docInfo))
+                {
+                    try
+                    {
+                        // Get the current transaction and roll it back.
+                        Transaction trans = Transaction.Current;
+                        trans.Rollback();
+                    }
+                    catch (SqlException ex)
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+
+        //基础缺省处理事件方法。
+        private static bool basicHandle(K3DataParaInfo docInfo)
         {
             SqlPipe pipe = SqlContext.Pipe;
             bool bRlt = true;
@@ -305,7 +621,7 @@ namespace K3ToX9SqlCRL
                         infoLogger(docInfo, string.Format("X9系统业务校验事件{0}服务，单据【{1}]表头标记为“不进入X9系统”。", docInfo.EventName, docInfo.InterID.ToString()));
                         return true;//直接返回，不再调用X9服务。
                     }
-                    ResultInfo rltInfo = defaultEventHandle(docInfo, itemConfig);
+                    ResultInfo rltInfo = defaultServiceHandle(docInfo, itemConfig);
                     if (rltInfo != null)
                     {
                         //bRlt = rltInfo.IsSuccess;//2019-8-13 改为：不管X9服务认定是否通过，都不再中断K3动作。
@@ -324,44 +640,7 @@ namespace K3ToX9SqlCRL
             }
             return bRlt;
         }
-
-        //生产投料单结案、反结案一并处理。
-        private static bool ppbomApprovedHandle(K3DataParaInfo docInfo)
-        {
-            SqlPipe pipe = SqlContext.Pipe;
-            bool bRlt = true;
-            try
-            {
-                debugLogger(docInfo, string.Format("进入基类{0}事件响应", docInfo.EventName));
-                K3InterceptConfig itemConfig = validateBusinessEnable(docInfo);
-                if (itemConfig != null)
-                {
-                    if (!isCalledFilter(itemConfig, docInfo))
-                    {
-                        infoLogger(docInfo, string.Format("X9系统业务校验事件{0}服务，单据【{1}]表头标记为“不进入X9系统”。", docInfo.EventName, docInfo.InterID.ToString()));
-                        return true;//直接返回，不再调用X9服务。
-                    }
-                    ResultInfo rltInfo = defaultEventHandle(docInfo, itemConfig);
-                    if (rltInfo != null)
-                    {
-                        //bRlt = rltInfo.IsSuccess;//2019-8-13 改为：不管X9服务认定是否通过，都不再中断K3动作。
-                        infoLogger(docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为{1}。", docInfo.EventName, rltInfo.IsSuccess.ToString()));
-                    }
-                }
-                else
-                {
-                    infoLogger(docInfo, string.Format("未启用X9系统对K3事件{0}的拦截", docInfo.EventName));
-                }
-            }
-            catch (Exception ex)
-            {
-                infoLogger(docInfo, string.Format("执行基类缺省拦截处理：{0}事件。异常：{1}", docInfo.EventName, ex.Message));
-                bRlt = true;
-            }
-
-            return bRlt;
-        }
-
+        
         /// <summary>
         /// 所单据表头增加了“是否进X9”字段，并在zz_t_K3InterceptConfig配置表设置好对应字段则会进行过滤调用。
         /// </summary>
@@ -418,7 +697,7 @@ namespace K3ToX9SqlCRL
             return bRlt;
         }
 
-        private static ResultInfo defaultEventHandle( K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
+        private static ResultInfo defaultServiceHandle( K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
         {
             SqlPipe pipe = SqlContext.Pipe;
             try

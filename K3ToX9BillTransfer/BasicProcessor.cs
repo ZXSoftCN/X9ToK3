@@ -37,7 +37,25 @@ namespace K3ToX9BillTransfer
         {
             return defaultEventHandle(InterceptEvent.DeleteAfter, docInfo);
         }
+        public bool firstApprovedBefore(K3DataParaInfo docInfo)
+        {
+            return defaultEventHandle(InterceptEvent.FirstApprovedBefore, docInfo);
+        }
 
+        public bool firstApprovedAfter(K3DataParaInfo docInfo)
+        {
+            return defaultEventHandle(InterceptEvent.FirstApprovedAfter, docInfo);
+        }
+
+        public bool unFirstApprovedBefore(K3DataParaInfo docInfo)
+        {
+            return defaultEventHandle(InterceptEvent.UnFirstApprovedBefore, docInfo);
+        }
+
+        public bool unFirstApprovedAfter(K3DataParaInfo docInfo)
+        {
+            return defaultEventHandle(InterceptEvent.UnFirstApprovedAfter, docInfo);
+        }
         public bool approvedBefore(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.ApprovedBefore, docInfo);
@@ -107,25 +125,24 @@ namespace K3ToX9BillTransfer
         #region 下级实现类扩展方法
         public abstract ResultInfo addBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
         public abstract ResultInfo addAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
-
         public abstract ResultInfo deleteBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
         public abstract ResultInfo deleteAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
 
+        public abstract ResultInfo firstApprovedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
+        public abstract ResultInfo firstApprovedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
+        public abstract ResultInfo unFirstApprovedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
+        public abstract ResultInfo unFirstApprovedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
         public abstract ResultInfo approvedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
         public abstract ResultInfo approvedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
-
         public abstract ResultInfo unApprovedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
         public abstract ResultInfo unApprovedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
 
         public abstract ResultInfo closedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
         public abstract ResultInfo closedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
-
         public abstract ResultInfo unClosedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
         public abstract ResultInfo unClosedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
-
         public abstract ResultInfo entryClosedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
         public abstract ResultInfo entryClosedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
-
         public abstract ResultInfo unEntryClosedBeforeExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
         public abstract ResultInfo unEntryClosedAfterExtend(K3DataParaInfo docInfo, K3InterceptConfig busiConfig);
         
@@ -170,6 +187,18 @@ namespace K3ToX9BillTransfer
                             break;
                         case InterceptEvent.DeleteAfter:
                             rltInfo = deleteAfterExtend(docInfo, itemConfig);
+                            break;
+                        case InterceptEvent.FirstApprovedBefore:
+                            rltInfo = firstApprovedBeforeExtend(docInfo, itemConfig);
+                            break;
+                        case InterceptEvent.FirstApprovedAfter:
+                            rltInfo = firstApprovedAfterExtend(docInfo, itemConfig);
+                            break;
+                        case InterceptEvent.UnFirstApprovedBefore:
+                            rltInfo = unFirstApprovedBeforeExtend(docInfo, itemConfig);
+                            break;
+                        case InterceptEvent.UnFirstApprovedAfter:
+                            rltInfo = unFirstApprovedAfterExtend(docInfo, itemConfig);
                             break;
                         case InterceptEvent.ApprovedBefore:
                             rltInfo = approvedBeforeExtend(docInfo, itemConfig);
@@ -361,8 +390,8 @@ namespace K3ToX9BillTransfer
 
             return bRlt;
         }
-        
 
+        
         public LOG_TYPE logInfoType
         {
             get
