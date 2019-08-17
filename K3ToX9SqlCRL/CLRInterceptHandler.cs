@@ -26,6 +26,7 @@ namespace K3ToX9SqlCRL
             string billCode = string.Empty;
             long interID = 0L;
             int insFStatus, delFStatus;
+            string strInsCommitDate = string.Empty, strDelCommitDate = string.Empty;
             bool bCheckTriggerCol = false;
             SqlTriggerContext triggContext = SqlContext.TriggerContext;
             SqlPipe pipe = SqlContext.Pipe;
@@ -72,6 +73,7 @@ namespace K3ToX9SqlCRL
                 billCode = (string)reader["FBillNo"].ToString();
                 interID = Convert.ToInt64(reader["FInterID"].ToString());
                 insFStatus = Convert.ToInt32(reader["FStatus"].ToString());
+                strInsCommitDate = reader["FCommitDate"].ToString();//下达日期
 
                 reader.Close();
             }
@@ -89,11 +91,17 @@ namespace K3ToX9SqlCRL
                     return;
                 }
                 delFStatus = Convert.ToInt32(reader["FStatus"].ToString());
+                strDelCommitDate = reader["FCommitDate"].ToString();//下达日期
 
                 reader.Close();
             }
             #region 下达时
-            if (insFStatus == 1 && delFStatus != 1)
+            //不再用insFStatus == 1 && delFStatus != 1判断是否下达，因为结案会出现更新ICShop_SubcOut表的FStatus,却触发IcMo触发器的bug。
+            /*
+             * 
+             * 
+             * */
+            if (string.IsNullOrEmpty(strDelCommitDate) && !string.IsNullOrEmpty(strInsCommitDate))
             {
                 K3DataParaInfo docInfo = new K3DataParaInfo()
                 {
@@ -117,6 +125,7 @@ namespace K3ToX9SqlCRL
                     }
                     catch (SqlException ex)
                     {
+                        //throw new Exception("X9系统异常");
                         return;
                     }
 
@@ -124,7 +133,7 @@ namespace K3ToX9SqlCRL
             }
             #endregion
             #region 反下达时
-            if (delFStatus == 1 && insFStatus != 1)
+            if (string.IsNullOrEmpty(strInsCommitDate) && !string.IsNullOrEmpty(strDelCommitDate))
             {
                 K3DataParaInfo docInfo = new K3DataParaInfo()
                 {
@@ -265,7 +274,7 @@ namespace K3ToX9SqlCRL
                 billCode = (string)reader["FBillNo"].ToString();
                 interID = Convert.ToInt64(reader["FInterID"].ToString());
                 insFStatus = Convert.ToInt32(reader["FStatus"].ToString());
-                typeID = Convert.ToInt32(reader["FTypeID"].ToString());
+                typeID = Convert.ToInt32(reader["FType"].ToString());
 
                 reader.Close();
             }
@@ -624,7 +633,7 @@ namespace K3ToX9SqlCRL
                     ResultInfo rltInfo = defaultServiceHandle(docInfo, itemConfig);
                     if (rltInfo != null)
                     {
-                        //bRlt = rltInfo.IsSuccess;//2019-8-13 改为：不管X9服务认定是否通过，都不再中断K3动作。
+                        bRlt = rltInfo.IsSuccess;//(2019-8-17取消)2019-8-13 改为：不管X9服务认定是否通过，都不再中断K3动作。
                         infoLogger(docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为{1}。", docInfo.EventName, rltInfo.IsSuccess.ToString()));
                     }
                 }
@@ -636,7 +645,7 @@ namespace K3ToX9SqlCRL
             catch (Exception ex)
             {
                 infoLogger(docInfo, string.Format("执行基类缺省拦截处理：{0}事件。异常：{1}", docInfo.EventName, ex.Message));
-                bRlt = true;
+                bRlt = false;
             }
             return bRlt;
         }
@@ -745,19 +754,20 @@ namespace K3ToX9SqlCRL
                     //strRlt = strRlt.Replace(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"", "");
                     //string strHttpDecoding = HttpUtility.HtmlDecode(strRlt);
                     ResultInfo rltInfo = XmlDeserialize<ResultInfo>(strRlt, Encoding.Unicode);
-                    if (!rltInfo.IsSuccess)
-                    {
-                        StringBuilder strbError = new StringBuilder();
-                        foreach (var item in rltInfo.Errors)
-                        {
-                            if (!String.IsNullOrEmpty(item.ErrorText))
-                            {
-                                strbError.AppendLine(item.ErrorText);
-                            }
-                        }
-                        docInfo.Data = strbError.ToString();
-                        cacheDocInfo(docInfo, busiConfig);
-                    }
+                    //(2019-8-17取消)
+                    //if (!rltInfo.IsSuccess)
+                    //{
+                    //    StringBuilder strbError = new StringBuilder();
+                    //    foreach (var item in rltInfo.Errors)
+                    //    {
+                    //        if (!String.IsNullOrEmpty(item.ErrorText))
+                    //        {
+                    //            strbError.AppendLine(item.ErrorText);
+                    //        }
+                    //    }
+                    //    docInfo.Data = strbError.ToString();
+                    //    cacheDocInfo(docInfo, busiConfig);
+                    //}
                     return rltInfo;
                 }
                 return null;

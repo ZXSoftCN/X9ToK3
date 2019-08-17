@@ -118,19 +118,19 @@ namespace K3ToX9BillTransfer
                     //string strHttpDecoding = HttpUtility.HtmlDecode(strRlt);
                     ResultInfo rltInfo = XmlSerializerHelper.XmlDeserialize<ResultInfo>(strRlt, Encoding.Unicode);
                     //2019-8-13 修改为：返回结果IsSuccess为false，缓存当前结果。
-                    if (!rltInfo.IsSuccess)
-                    {
-                        StringBuilder strbError = new StringBuilder();
-                        foreach (var item in rltInfo.Errors)
-                        {
-                            if (!String.IsNullOrEmpty(item.ErrorText))
-                            {
-                                strbError.AppendLine(item.ErrorText);
-                            }
-                        }
-                        docInfo.Data = strbError.ToString();
-                        cacheDocInfo(docInfo, busiConfig);
-                    }
+                    //if (!rltInfo.IsSuccess)
+                    //{
+                    //    StringBuilder strbError = new StringBuilder();
+                    //    foreach (var item in rltInfo.Errors)
+                    //    {
+                    //        if (!String.IsNullOrEmpty(item.ErrorText))
+                    //        {
+                    //            strbError.AppendLine(item.ErrorText);
+                    //        }
+                    //    }
+                    //    docInfo.Data = strbError.ToString();
+                    //    cacheDocInfo(docInfo, busiConfig);
+                    //}
                     return rltInfo;
                 }
                 return null;

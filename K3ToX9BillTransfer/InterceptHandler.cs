@@ -155,7 +155,7 @@ namespace K3ToX9BillTransfer
             }
             catch (Exception ex)
             {
-                //异常时将错误信息保存至日志，并弹窗提示，但不中断K3动作，让其继续执行下去。
+                //(2019-8-17取消)异常时将错误信息保存至日志，并弹窗提示，但不中断K3动作，让其继续执行下去。
                 //rltFlag = false;
                 bInnerRlt = false;
                 LogInfoHelp.infoLog(docInfo.EventName, docInfo,
@@ -175,7 +175,7 @@ namespace K3ToX9BillTransfer
             }
             finally
             {
-                //rltFlag = bInnerRlt;//最终将内部调用结果返回给K3中间件插件 //不再中断K3动作 2019-8-13
+                rltFlag = bInnerRlt;//(2019-8-17取消)最终将内部调用结果返回给K3中间件插件 //不再中断K3动作 2019-8-13
                 LogInfoHelp.infoLog(docInfo.EventName, docInfo, string.Format("K3ToX9拦截器执行结束,结果：{0}", bInnerRlt.ToString()));
             }
         }
