@@ -19,29 +19,29 @@ namespace K3ToX9BillTransfer
         /// <param name="billCode">单据编号</param>
         /// <param name="data">发生业务时指令内容</param>
         /// <param name="rltFlag">是否允许K3继续执行的结果。true则继续，false则中断。</param>
-        bool addBefore(K3DataParaInfo docInfo);
-        bool addAfter(K3DataParaInfo docInfo);
-        bool deleteBefore(K3DataParaInfo docInfo);
-        bool deleteAfter(K3DataParaInfo docInfo);
+        ResultInfo addBefore(K3DataParaInfo docInfo);
+        ResultInfo addAfter(K3DataParaInfo docInfo);
+        ResultInfo deleteBefore(K3DataParaInfo docInfo);
+        ResultInfo deleteAfter(K3DataParaInfo docInfo);
 
-        bool firstApprovedBefore(K3DataParaInfo docInfo);
-        bool firstApprovedAfter(K3DataParaInfo docInfo);
-        bool unFirstApprovedBefore(K3DataParaInfo docInfo);
-        bool unFirstApprovedAfter(K3DataParaInfo docInfo);
-        bool approvedBefore(K3DataParaInfo docInfo);
-        bool approvedAfter(K3DataParaInfo docInfo);
-        bool unApprovedBefore(K3DataParaInfo docInfo);
-        bool unApprovedAfter(K3DataParaInfo docInfo);
+        ResultInfo firstApprovedBefore(K3DataParaInfo docInfo);
+        ResultInfo firstApprovedAfter(K3DataParaInfo docInfo);
+        ResultInfo unFirstApprovedBefore(K3DataParaInfo docInfo);
+        ResultInfo unFirstApprovedAfter(K3DataParaInfo docInfo);
+        ResultInfo approvedBefore(K3DataParaInfo docInfo);
+        ResultInfo approvedAfter(K3DataParaInfo docInfo);
+        ResultInfo unApprovedBefore(K3DataParaInfo docInfo);
+        ResultInfo unApprovedAfter(K3DataParaInfo docInfo);
 
-        bool closedBefore(K3DataParaInfo docInfo);
-        bool closedAfter(K3DataParaInfo docInfo);
-        bool unClosedBefore(K3DataParaInfo docInfo);
-        bool unClosedAfter(K3DataParaInfo docInfo);
-        bool entryClosedBefore(K3DataParaInfo docInfo);
-        bool entryClosedAfter(K3DataParaInfo docInfo);
-        bool unEntryClosedBefore(K3DataParaInfo docInfo);
-        bool unEntryClosedAfter(K3DataParaInfo docInfo);
+        ResultInfo closedBefore(K3DataParaInfo docInfo);
+        ResultInfo closedAfter(K3DataParaInfo docInfo);
+        ResultInfo unClosedBefore(K3DataParaInfo docInfo);
+        ResultInfo unClosedAfter(K3DataParaInfo docInfo);
+        ResultInfo entryClosedBefore(K3DataParaInfo docInfo);
+        ResultInfo entryClosedAfter(K3DataParaInfo docInfo);
+        ResultInfo unEntryClosedBefore(K3DataParaInfo docInfo);
+        ResultInfo unEntryClosedAfter(K3DataParaInfo docInfo);
 
-        bool unKnownEvent(K3DataParaInfo docInfo);
+        ResultInfo unKnownEvent(K3DataParaInfo docInfo);
     }
 }

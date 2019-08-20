@@ -21,102 +21,102 @@ namespace K3ToX9BillTransfer
 
         #region IInterceptEventProcessor方法实现
 
-        public bool addBefore(K3DataParaInfo docInfo)
+        public ResultInfo addBefore(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.AddBefore, docInfo);
         }
-        public bool addAfter(K3DataParaInfo docInfo)
+        public ResultInfo addAfter(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.AddAfter, docInfo);
         }
-        public bool deleteBefore(K3DataParaInfo docInfo)
+        public ResultInfo deleteBefore(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.DeleteBefore, docInfo);
         }
-        public bool deleteAfter(K3DataParaInfo docInfo)
+        public ResultInfo deleteAfter(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.DeleteAfter, docInfo);
         }
-        public bool firstApprovedBefore(K3DataParaInfo docInfo)
+        public ResultInfo firstApprovedBefore(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.FirstApprovedBefore, docInfo);
         }
 
-        public bool firstApprovedAfter(K3DataParaInfo docInfo)
+        public ResultInfo firstApprovedAfter(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.FirstApprovedAfter, docInfo);
         }
 
-        public bool unFirstApprovedBefore(K3DataParaInfo docInfo)
+        public ResultInfo unFirstApprovedBefore(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.UnFirstApprovedBefore, docInfo);
         }
 
-        public bool unFirstApprovedAfter(K3DataParaInfo docInfo)
+        public ResultInfo unFirstApprovedAfter(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.UnFirstApprovedAfter, docInfo);
         }
-        public bool approvedBefore(K3DataParaInfo docInfo)
+        public ResultInfo approvedBefore(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.ApprovedBefore, docInfo);
         }
 
-        public bool approvedAfter(K3DataParaInfo docInfo)
+        public ResultInfo approvedAfter(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.ApprovedAfter, docInfo);
         }
 
-        public bool unApprovedBefore(K3DataParaInfo docInfo)
+        public ResultInfo unApprovedBefore(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.UnApprovedBefore, docInfo);
         }
 
-        public bool unApprovedAfter(K3DataParaInfo docInfo)
+        public ResultInfo unApprovedAfter(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.UnApprovedAfter, docInfo);
         }
 
-        public bool closedBefore(K3DataParaInfo docInfo)
+        public ResultInfo closedBefore(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.ClosedBefore, docInfo);
         }
 
-        public bool closedAfter(K3DataParaInfo docInfo)
+        public ResultInfo closedAfter(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.ClosedAfter, docInfo);
         }
 
-        public bool unClosedBefore(K3DataParaInfo docInfo)
+        public ResultInfo unClosedBefore(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.UnClosedBefore, docInfo);
         }
 
-        public bool unClosedAfter(K3DataParaInfo docInfo)
+        public ResultInfo unClosedAfter(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.UnClosedAfter, docInfo);
         }
 
-        public bool entryClosedBefore(K3DataParaInfo docInfo)
+        public ResultInfo entryClosedBefore(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.EntryClosedBefore, docInfo);
         }
 
-        public bool entryClosedAfter(K3DataParaInfo docInfo)
+        public ResultInfo entryClosedAfter(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.EntryClosedAfter, docInfo);
         }
 
-        public bool unEntryClosedBefore(K3DataParaInfo docInfo)
+        public ResultInfo unEntryClosedBefore(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.UnEntryClosedBefore, docInfo);
         }
 
-        public bool unEntryClosedAfter(K3DataParaInfo docInfo)
+        public ResultInfo unEntryClosedAfter(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.UnEntryClosedAfter, docInfo);
         }
 
-        public bool unKnownEvent(K3DataParaInfo docInfo)
+        public ResultInfo unKnownEvent(K3DataParaInfo docInfo)
         {
             return defaultEventHandle(InterceptEvent.UnKnownEvent, docInfo);
         }        
@@ -156,9 +156,9 @@ namespace K3ToX9BillTransfer
         /// <param name="docInfo"></param>
         /// <param name="rltFlag"></param>
         /// <returns><\returns>
-        private bool defaultEventHandle(string eventName, K3DataParaInfo docInfo)
+        private ResultInfo defaultEventHandle(string eventName, K3DataParaInfo docInfo)
         {
-            bool bRlt = true;
+            ResultInfo rltInfo = null;
             try
             {
                 LogInfoHelp.debugLog(eventName, docInfo, string.Format("进入基类{0}事件响应",eventName));
@@ -171,9 +171,8 @@ namespace K3ToX9BillTransfer
                     if (!isCalledFilter(itemConfig, docInfo))
                     {
                         LogInfoHelp.infoLog(eventName, docInfo, string.Format("X9系统业务校验事件{0}服务，单据【{1}]表头标记为“不进入X9系统”。", eventName,docInfo.InterID.ToString()));
-                        return false;
+                        return null;
                     }
-                    ResultInfo rltInfo = null;
                     switch (eventName)
                     {
                         case InterceptEvent.AddBefore:
@@ -240,68 +239,6 @@ namespace K3ToX9BillTransfer
                             rltInfo = unKnownExtend(docInfo, itemConfig);
                             break;
                     }
-                    
-                    if (rltInfo == null)
-                    {
-                        //LogInfoHelp.infoLog(eventName, docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为空值(null),K3动作继续进行。", eventName));
-                        throw new Exception(string.Format("X9系统业务校验事件{0}服务，返回结果为空值(null),K3动作继续进行。", eventName));
-                    }
-                    else
-                    {
-                        if (eventName.IndexOf("After",0,StringComparison.OrdinalIgnoreCase) > 0)
-                        {
-                            bRlt = true;
-                        }
-                        else
-                        {
-                            bRlt = rltInfo.IsSuccess;//(2019-8-17取消)返回结果对象是否校验通过。2019-8-13 改为：不管X9服务认定是否通过，都不再中断K3动作。
-                        }
-                        
-
-                        LogInfoHelp.infoLog(eventName, docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为{1}。", eventName,rltInfo.IsSuccess.ToString()));
-                        LogInfoHelp.debugLog(eventName, docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为{1}。", eventName, 
-                            XmlSerializerHelper.XmlSerialize<ResultInfo>(rltInfo,Encoding.Unicode)));
-                        //当标记为Debug时，显示结果返回窗。
-                        if (CommonFunc.ConfigLogType > LOG_TYPE.LOG_INFO)
-                        {
-                            StringBuilder strbInfo = new StringBuilder();
-                            StringBuilder strbError = new StringBuilder();
-                            foreach (var item in rltInfo.Errors)
-                            {
-                                if (!String.IsNullOrEmpty(item.ErrorText))
-                                {
-                                    strbError.AppendLine(item.ErrorText);
-                                }
-                            }
-                            foreach (var item in rltInfo.Results)
-                            {
-                                if (!String.IsNullOrEmpty(item.MsgText))
-                                {
-                                    strbInfo.AppendLine(item.MsgText);
-                                }
-                            }
-                            string strEventMsg = string.Empty;
-                            if (bRlt)
-                            {
-                                strEventMsg = string.Format("X9系统检查{0}通过！", InterceptEvent.ConvertToCNZHName(eventName));
-                            }
-                            else
-                            {
-                                strEventMsg = string.Format("X9系统检查{0}不通过！", InterceptEvent.ConvertToCNZHName(eventName));
-                            }
-                            string strRlt = string.Format("消息：{0}{1}", strEventMsg, Environment.NewLine);
-                            if (!string.IsNullOrEmpty(strbInfo.ToString()))
-                            {
-                                strRlt += string.Format("{0}{1}", strbInfo.ToString(), Environment.NewLine);
-                            }
-                            if (!string.IsNullOrEmpty(strbError.ToString()))
-                            {
-                                strRlt += string.Format("异常提示：{0}", strbError.ToString());
-                            }
-                            frmMessageSingle.Show(strRlt, XmlSerializerHelper.XmlSerialize<ResultInfo>(rltInfo, Encoding.Unicode));
-                        }
-                    }
-                    LogInfoHelp.debugLog(eventName, docInfo, string.Format("完成X9系统业务校验事件{0}服务中", eventName));
                 }
                 else
                 {
@@ -310,13 +247,13 @@ namespace K3ToX9BillTransfer
             }
             catch (Exception ex)
             {
-                //LogInfoHelp.infoLog(InterceptEvent.ApprovedBefore, docInfo,
-                //    string.Format("执行基类缺省拦截处理：{0}事件。异常：{1}",eventName, ex.Message));
-                throw new Exception(string.Format("{0}\t{1}", Environment.NewLine,
-                    string.Format("执行基类缺省拦截处理：{0}事件。异常：{1}", eventName, ex.Message)),ex);
+                LogInfoHelp.infoLog(docInfo.EventName, docInfo,
+                    string.Format("执行基类缺省拦截处理：{0}事件。异常：{1}", eventName, ex.Message));
+                //throw new Exception(string.Format("{0}\t{1}", Environment.NewLine,
+                //    string.Format("执行基类缺省拦截处理：{0}事件。异常：{1}", eventName, ex.Message)),ex);
                 //throw new RankException(string.Format("执行基类缺省拦截处理：{0}事件。异常：{1}", eventName, string.Empty), ex);
             }
-            return bRlt;
+            return rltInfo;
         }
 
         /// <summary>

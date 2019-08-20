@@ -633,8 +633,16 @@ namespace K3ToX9SqlCRL
                     ResultInfo rltInfo = defaultServiceHandle(docInfo, itemConfig);
                     if (rltInfo != null)
                     {
-                        bRlt = rltInfo.IsSuccess;//(2019-8-17取消)2019-8-13 改为：不管X9服务认定是否通过，都不再中断K3动作。
-                        infoLogger(docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为{1}。", docInfo.EventName, rltInfo.IsSuccess.ToString()));
+                        if (docInfo.EventName.IndexOf("After", 0, StringComparison.OrdinalIgnoreCase) > 0)
+                        {
+                            bRlt = true;
+                        }
+                        else
+                        {
+                            bRlt = rltInfo.IsSuccess;//(2019-8-17取消)2019-8-13 改为：不管X9服务认定是否通过，都不再中断K3动作。
+                        }
+
+                        infoLogger(docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为{1}。", docInfo.EventName, bRlt.ToString()));
                     }
                 }
                 else

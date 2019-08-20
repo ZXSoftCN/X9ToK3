@@ -29,9 +29,9 @@ namespace K3ToX9BillTransfer
         /// <param name="currUser"></param>
         /// <param name="data"></param>
         /// <param name="rltFlag">特别注意为false时，也就是执行失败时外部分布式事务会回滚所有的数据更新处理。</param>
-        public void handle(string k3Connection, int transType, int rob,long operateID, long eventID, long interID,int entryID, string billCode,string currUser, string data, ref bool rltFlag)
+        public void handle(string k3Connection, int transType, int rob,long operateID, long eventID, long interID,int entryID, string billCode,string currUser, string data, ref bool rltFlag,ref string rltMsg)
         {
-            bool bInnerRlt = true;
+            ResultInfo rltInfo = null;
             //LogInfoHelp.Log(k3Connection, LOG_TYPE.LOG_DEBUG);
 
             int lCheckLevel = 0, lCurrentLevel = 0;
@@ -75,69 +75,145 @@ namespace K3ToX9BillTransfer
                     switch (docInfo.EventName)
                     {
                         case InterceptEvent.AddBefore:
-                            bInnerRlt = processor.addBefore(docInfo);
+                            rltInfo = processor.addBefore(docInfo);
                             break;
                         case InterceptEvent.AddAfter:
-                            bInnerRlt = processor.addAfter(docInfo);
+                            rltInfo = processor.addAfter(docInfo);
                             break;
                         case InterceptEvent.DeleteBefore:
-                            bInnerRlt = processor.deleteBefore(docInfo);
+                            rltInfo = processor.deleteBefore(docInfo);
                             break;
                         case InterceptEvent.DeleteAfter:
-                            bInnerRlt = processor.deleteAfter(docInfo);
+                            rltInfo = processor.deleteAfter(docInfo);
                             break;
                         case InterceptEvent.FirstApprovedBefore:
-                            bInnerRlt = processor.firstApprovedBefore(docInfo);
+                            rltInfo = processor.firstApprovedBefore(docInfo);
                             break;
                         case InterceptEvent.FirstApprovedAfter:
-                            bInnerRlt = processor.firstApprovedAfter(docInfo);
+                            rltInfo = processor.firstApprovedAfter(docInfo);
                             break;
                         case InterceptEvent.UnFirstApprovedBefore:
-                            bInnerRlt = processor.unFirstApprovedBefore(docInfo);
+                            rltInfo = processor.unFirstApprovedBefore(docInfo);
                             break;
                         case InterceptEvent.UnFirstApprovedAfter:
-                            bInnerRlt = processor.unFirstApprovedAfter(docInfo);
+                            rltInfo = processor.unFirstApprovedAfter(docInfo);
                             break;
                         case InterceptEvent.ApprovedBefore:
-                            bInnerRlt = processor.approvedBefore(docInfo);
+                            rltInfo = processor.approvedBefore(docInfo);
                             break;
                         case InterceptEvent.ApprovedAfter:
-                            bInnerRlt = processor.approvedAfter(docInfo);
+                            rltInfo = processor.approvedAfter(docInfo);
                             break;
                         case InterceptEvent.UnApprovedBefore:
-                            bInnerRlt = processor.unApprovedBefore(docInfo);
+                            rltInfo = processor.unApprovedBefore(docInfo);
                             break;
                         case InterceptEvent.UnApprovedAfter:
-                            bInnerRlt = processor.unApprovedAfter(docInfo);
+                            rltInfo = processor.unApprovedAfter(docInfo);
                             break;
                         case InterceptEvent.ClosedBefore:
-                            bInnerRlt = processor.closedBefore(docInfo);
+                            rltInfo = processor.closedBefore(docInfo);
                             break;
                         case InterceptEvent.ClosedAfter:
-                            bInnerRlt = processor.closedAfter(docInfo);
+                            rltInfo = processor.closedAfter(docInfo);
                             break;
                         case InterceptEvent.UnClosedBefore:
-                            bInnerRlt = processor.unClosedBefore(docInfo);
+                            rltInfo = processor.unClosedBefore(docInfo);
                             break;
                         case InterceptEvent.UnClosedAfter:
-                            bInnerRlt = processor.unClosedAfter(docInfo);
+                            rltInfo = processor.unClosedAfter(docInfo);
                             break;
                         case InterceptEvent.EntryClosedBefore:
-                            bInnerRlt = processor.entryClosedBefore(docInfo);
+                            rltInfo = processor.entryClosedBefore(docInfo);
                             break;
                         case InterceptEvent.EntryClosedAfter:
-                            bInnerRlt = processor.entryClosedAfter(docInfo);
+                            rltInfo = processor.entryClosedAfter(docInfo);
                             break;
                         case InterceptEvent.UnEntryClosedBefore:
-                            bInnerRlt = processor.unEntryClosedBefore(docInfo);
+                            rltInfo = processor.unEntryClosedBefore(docInfo);
                             break;
                         case InterceptEvent.UnEntryClosedAfter:
-                            bInnerRlt = processor.unEntryClosedAfter(docInfo);
+                            rltInfo = processor.unEntryClosedAfter(docInfo);
                             break;
                         default:
-                            bInnerRlt = processor.unKnownEvent(docInfo);
+                            rltInfo = processor.unKnownEvent(docInfo);
                             break;
                     }
+                    if (rltInfo == null)
+                    {
+                        //当未启用、单据表头标记为‘不进入X9系统’或服务调用异常时，rltInfo为null,这时K3业务继续。
+                        LogInfoHelp.debugLog(docInfo.EventName, docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为空值(null),K3动作继续进行。", docInfo.EventName));
+                        rltFlag = true;
+                        //throw new Exception(string.Format("X9系统业务校验事件{0}服务，返回结果为空值(null),K3动作继续进行。", docInfo.EventName));
+                    }
+                    else
+                    {
+                        if (docInfo.EventName.IndexOf("After", 0, StringComparison.OrdinalIgnoreCase) > 0)
+                        {
+                            rltFlag = true;
+                        }
+                        else
+                        {
+                            rltFlag = rltInfo.IsSuccess;//(2019-8-17取消)返回结果对象是否校验通过。2019-8-13 改为：不管X9服务认定是否通过，都不再中断K3动作。
+                        }
+                        if (!rltFlag)
+                        {
+                            //X9服务返回false时，将异常消息传出
+                            StringBuilder strbError = new StringBuilder();
+                            foreach (var item in rltInfo.Errors)
+                            {
+                                if (!String.IsNullOrEmpty(item.ErrorText))
+                                {
+                                    strbError.AppendLine(item.ErrorText);
+                                }
+                            }
+                            rltMsg = strbError.ToString();
+                        }
+
+                        LogInfoHelp.infoLog(docInfo.EventName, docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为{1}。", docInfo.EventName, rltInfo.IsSuccess.ToString()));
+                        LogInfoHelp.debugLog(docInfo.EventName, docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为{1}。", docInfo.EventName,
+                            XmlSerializerHelper.XmlSerialize<ResultInfo>(rltInfo, Encoding.Unicode)));
+                        #region 当标记为Debug时，显示结果返回窗。
+                        if (CommonFunc.ConfigLogType > LOG_TYPE.LOG_INFO)
+                        {
+                            StringBuilder strbInfo = new StringBuilder();
+                            StringBuilder strbError = new StringBuilder();
+                            foreach (var item in rltInfo.Errors)
+                            {
+                                if (!String.IsNullOrEmpty(item.ErrorText))
+                                {
+                                    strbError.AppendLine(item.ErrorText);
+                                }
+                            }
+                            foreach (var item in rltInfo.Results)
+                            {
+                                if (!String.IsNullOrEmpty(item.MsgText))
+                                {
+                                    strbInfo.AppendLine(item.MsgText);
+                                }
+                            }
+                            string strEventMsg = string.Empty;
+                            if (rltFlag)
+                            {
+                                strEventMsg = string.Format("X9系统检查{0}通过！", InterceptEvent.ConvertToCNZHName(docInfo.EventName));
+                            }
+                            else
+                            {
+                                strEventMsg = string.Format("X9系统检查{0}不通过！", InterceptEvent.ConvertToCNZHName(docInfo.EventName));
+                            }
+                            string strRlt = string.Format("消息：{0}{1}", strEventMsg, Environment.NewLine);
+                            if (!string.IsNullOrEmpty(strbInfo.ToString()))
+                            {
+                                strRlt += string.Format("{0}{1}", strbInfo.ToString(), Environment.NewLine);
+                            }
+                            if (!string.IsNullOrEmpty(strbError.ToString()))
+                            {
+                                strRlt += string.Format("异常提示：{0}", strbError.ToString());
+                            }
+                            frmMessageSingle.Show(strRlt, XmlSerializerHelper.XmlSerialize<ResultInfo>(rltInfo, Encoding.Unicode));
+                        }
+                        #endregion
+                    }
+                    LogInfoHelp.debugLog(docInfo.EventName, docInfo, string.Format("完成X9系统业务校验事件{0}服务中", docInfo.EventName));
                 }
                 else
                 {
@@ -157,7 +233,8 @@ namespace K3ToX9BillTransfer
             {
                 //(2019-8-17取消)异常时将错误信息保存至日志，并弹窗提示，但不中断K3动作，让其继续执行下去。
                 //rltFlag = false;
-                bInnerRlt = false;
+                rltFlag = false;
+                rltMsg = string.Format("请查看日志进行详查定位！异常消息：{0}",ex.Message);
                 LogInfoHelp.infoLog(docInfo.EventName, docInfo,
                     string.Format("X9对K3中间层拦截器执行异常，可将配置文件设置为‘Debug'进行详查定位！{0}异常消息：{1}\t{2}异常对象来源：{3}\t{4}异常堆栈：{5}",
                      Environment.NewLine, ex.Message, Environment.NewLine, ex.Source, Environment.NewLine, ex.StackTrace));
@@ -175,8 +252,8 @@ namespace K3ToX9BillTransfer
             }
             finally
             {
-                rltFlag = bInnerRlt;//(2019-8-17取消)最终将内部调用结果返回给K3中间件插件 //不再中断K3动作 2019-8-13
-                LogInfoHelp.infoLog(docInfo.EventName, docInfo, string.Format("K3ToX9拦截器执行结束,结果：{0}", bInnerRlt.ToString()));
+                //rltFlag = rltInfo;//(2019-8-17取消)最终将内部调用结果返回给K3中间件插件 //不再中断K3动作 2019-8-13
+                LogInfoHelp.infoLog(docInfo.EventName, docInfo, string.Format("K3ToX9拦截器执行结束,结果：{0}", rltInfo.ToString()));
             }
         }
 
