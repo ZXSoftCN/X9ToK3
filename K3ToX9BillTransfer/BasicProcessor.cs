@@ -248,7 +248,15 @@ namespace K3ToX9BillTransfer
                     }
                     else
                     {
-                        bRlt = rltInfo.IsSuccess;//(2019-8-17取消)返回结果对象是否校验通过。2019-8-13 改为：不管X9服务认定是否通过，都不再中断K3动作。
+                        if (eventName.IndexOf("After",0,StringComparison.OrdinalIgnoreCase) > 0)
+                        {
+                            bRlt = true;
+                        }
+                        else
+                        {
+                            bRlt = rltInfo.IsSuccess;//(2019-8-17取消)返回结果对象是否校验通过。2019-8-13 改为：不管X9服务认定是否通过，都不再中断K3动作。
+                        }
+                        
 
                         LogInfoHelp.infoLog(eventName, docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为{1}。", eventName,rltInfo.IsSuccess.ToString()));
                         LogInfoHelp.debugLog(eventName, docInfo, string.Format("X9系统业务校验事件{0}服务，返回结果为{1}。", eventName, 
