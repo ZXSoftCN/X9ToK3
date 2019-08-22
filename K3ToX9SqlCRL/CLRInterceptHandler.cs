@@ -177,7 +177,7 @@ namespace K3ToX9SqlCRL
                     ROB = 1,
                     CurrentUser = "X9Validator",
                     X9BillType = 5,
-                    EventName = "ClosedBefore",
+                    EventName = "ClosedAfter",
                     Data = "",
                 };
                 if (!basicHandle(docInfo))
@@ -208,7 +208,7 @@ namespace K3ToX9SqlCRL
                     ROB = 1,
                     CurrentUser = "X9Validator",
                     X9BillType = 5,
-                    EventName = "UnClosedBefore",
+                    EventName = "UnClosedAfter",
                     Data = "",
                 };
 
@@ -432,7 +432,7 @@ namespace K3ToX9SqlCRL
                     ROB = 0,
                     CurrentUser = "X9Validator",
                     X9BillType = 3,
-                    EventName = "ClosedBefore",
+                    EventName = "ClosedAfter",
                     Data = "",
                 };
                 if (!basicHandle(docInfo))
@@ -461,7 +461,7 @@ namespace K3ToX9SqlCRL
                     ROB = 0,
                     CurrentUser = "X9Validator",
                     X9BillType = 3,
-                    EventName = "UnClosedBefore",
+                    EventName = "UnClosedAfter",
                     Data = "",
                 };
 
@@ -558,7 +558,7 @@ namespace K3ToX9SqlCRL
                     ROB = 0,
                     CurrentUser = "X9Validator",
                     X9BillType = 3,
-                    EventName = "EntryClosedBefore",
+                    EventName = "EntryClosedAfter",
                     Data = "",
                 };
                 if (!basicHandle(docInfo))
@@ -587,7 +587,7 @@ namespace K3ToX9SqlCRL
                     ROB = 0,
                     CurrentUser = "X9Validator",
                     X9BillType = 3,
-                    EventName = "UnEntryClosedBefore",
+                    EventName = "UnEntryClosedAfter",
                     Data = "",
                 };
 

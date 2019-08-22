@@ -48,7 +48,26 @@ namespace K3ToX9BillTransfer
             {
                 LogInfoHelp.Log(string.Format("查询单据多级审核时异常：{0}", ex.Message), LOG_TYPE.LOG_INFO);
             }
-            
+
+            #region eventID=300007/300008/300015/300016关闭时，对应transType=82/83，销售发货、退货同为SEOutStock表需要通过interID查询再区分
+            try
+            {
+                if (transType == 82 || transType == 83)
+                {
+                    if (eventID == 300007 || eventID == 300008)
+                    {
+                        transType = getSEOutBillType(k3Connection,interID);
+                    }
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                LogInfoHelp.Log(string.Format("区分单据关闭时业务类型异常：{0}", ex.Message), LOG_TYPE.LOG_INFO);
+            }
+
+            #endregion
+
             K3DataParaInfo docInfo = new K3DataParaInfo()
             {
                 BillCode = billCode,
@@ -316,6 +335,26 @@ namespace K3ToX9BillTransfer
                 }
             }
             return 0;
+        }
+
+        private int getSEOutBillType(string k3ConnectString, long interID)
+        {
+            int iTransType = 83;
+            using (SqlConnection sqlconn = new SqlConnection(k3ConnectString))
+            {
+                sqlconn.Open();
+                using (SqlCommand sqlcommSEOutType = new SqlCommand(string.Format("select FTranType from SEOutStock where FInterID = {0}",
+                    interID.ToString()), sqlconn))
+                {
+                    Object objStockTable = sqlcommSEOutType.ExecuteScalar();
+
+                    if (objStockTable != null && !String.IsNullOrEmpty(objStockTable.ToString()))
+                    {
+                        iTransType = Convert.ToInt32(objStockTable.ToString());
+                    }
+                }
+            }
+            return iTransType;
         }
     }
 }

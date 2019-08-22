@@ -89,8 +89,8 @@ namespace K3ToX9BillTransfer
             if (CommonFunc.ConfigLogType >= LOG_TYPE.LOG_DEBUG)
             {
                 string strPreLog = String.Format("-----------日志消息：{0}---------------" + Environment.NewLine
-                + "\tK3传递数据内容：业务类型【{1}】；红蓝字【{2}】；触发事件【{3}】；单据内码【{4}】；明细行ID【{5}】；单据编码【{6}】；额外数据【{7}】；操作人【{8}】",
-                msg, docInfo.TransType.ToString(), docInfo.ROB.ToString(), interceptEvent, docInfo.InterID.ToString(), docInfo.EntryID.ToString(), 
+                + "\tK3传递数据内容：X9业务类型：【{1}】；K3业务类型【{2}】；红蓝字【{3}】；触发事件【{4}】；单据内码【{5}】；明细行ID【{6}】；单据编码【{7}】；额外数据【{8}】；操作人【{9}】",
+                msg,docInfo.X9BillType.ToString(), docInfo.TransType.ToString(), docInfo.ROB.ToString(), interceptEvent, docInfo.InterID.ToString(), docInfo.EntryID.ToString(), 
                 docInfo.BillCode, docInfo.Data, docInfo.CurrentUser);
 
                 Log(strPreLog, CommonFunc.ConfigLogType);
@@ -105,9 +105,9 @@ namespace K3ToX9BillTransfer
             if (CommonFunc.ConfigLogType >= LOG_TYPE.LOG_INFO)
             {
                 string strPreLog = String.Format("-----------日志消息：{0}---------------" + Environment.NewLine
-                + "\tK3传递数据内容：业务类型【{1}】；红蓝字【{2}】；触发事件【{3}】；单据内码【{4}】；明细行ID【{5}】；单据编码【{6}】；额外数据【{7}】；操作人【{8}】",
-                msg,docInfo.TransType.ToString(),docInfo.ROB.ToString(), interceptEvent,docInfo.InterID.ToString(),docInfo.EntryID.ToString(),
-                docInfo.BillCode,docInfo.Data,docInfo.CurrentUser);
+                + "\tK3传递数据内容：X9业务类型：【{1}】；K3业务类型【{2}】；红蓝字【{3}】；触发事件【{4}】；单据内码【{5}】；明细行ID【{6}】；单据编码【{7}】；额外数据【{8}】；操作人【{9}】",
+                msg, docInfo.X9BillType.ToString(), docInfo.TransType.ToString(), docInfo.ROB.ToString(), interceptEvent, docInfo.InterID.ToString(), docInfo.EntryID.ToString(),
+                docInfo.BillCode, docInfo.Data, docInfo.CurrentUser);
 
                 Log(strPreLog, CommonFunc.ConfigLogType);
             }
