@@ -112,7 +112,7 @@ namespace K3ToX9SqlCRL
                     ROB = 1,
                     CurrentUser = "X9Validator",
                     X9BillType = 5,
-                    EventName = "ApprovedBefore",
+                    EventName = "ApprovedAfter",
                     Data = "",
                 };
                 if (!basicHandle(docInfo))
@@ -144,7 +144,7 @@ namespace K3ToX9SqlCRL
                     ROB = 1,
                     CurrentUser = "X9Validator",
                     X9BillType = 5,
-                    EventName = "UnApprovedBefore",
+                    EventName = "UnApprovedAfter",
                     Data = "",
                 };
                 if (!basicHandle(docInfo))
@@ -307,7 +307,7 @@ namespace K3ToX9SqlCRL
                     ROB = 1,
                     CurrentUser = "X9Validator",
                     X9BillType = typeID == 1067 ? 23 : 7,//根据typeID区分是工单投料，还是委外投料。
-                    EventName = "ApprovedBefore",
+                    EventName = "ApprovedAfter",
                     Data = "",
                 };
                 if (!basicHandle(docInfo))
@@ -336,7 +336,7 @@ namespace K3ToX9SqlCRL
                     ROB = 1,
                     CurrentUser = "X9Validator",
                     X9BillType = typeID == 1067 ? 23 : 7,//根据typeID区分是工单投料，还是委外投料。
-                    EventName = "UnApprovedBefore",
+                    EventName = "UnApprovedAfter",
                     Data = "",
                 };
 
@@ -543,7 +543,6 @@ namespace K3ToX9SqlCRL
                     return;
                 }
                 delFClosed = Convert.ToInt32(reader["FMrpClosed"].ToString());
-
                 reader.Close();
             }
             //行关闭时

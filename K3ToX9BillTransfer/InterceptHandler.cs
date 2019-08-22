@@ -49,14 +49,23 @@ namespace K3ToX9BillTransfer
                 LogInfoHelp.Log(string.Format("查询单据多级审核时异常：{0}", ex.Message), LOG_TYPE.LOG_INFO);
             }
 
-            #region eventID=300007/300008/300015/300016关闭时，对应transType=82/83，销售发货、退货同为SEOutStock表需要通过interID查询再区分
+            #region eventID=300007/300008/300015/300016关闭时
             try
             {
+                //对应transType=82/83，销售发货、退货同为SEOutStock表需要通过interID查询再区分
                 if (transType == 82 || transType == 83)
                 {
                     if (eventID == 300007 || eventID == 300008)
                     {
                         transType = getSEOutBillType(k3Connection,interID);
+                    }
+                }
+                //对应transType=72/73，采购收料、退料同为POInStock表需要通过interID查询再区分
+                if (transType == 72 || transType == 73)
+                {
+                    if (eventID == 300007 || eventID == 300008)
+                    {
+                        transType = getPOInBillType(k3Connection, interID);
                     }
                 }
                 
@@ -272,7 +281,7 @@ namespace K3ToX9BillTransfer
             finally
             {
                 //rltFlag = rltInfo;//(2019-8-17取消)最终将内部调用结果返回给K3中间件插件 //不再中断K3动作 2019-8-13
-                LogInfoHelp.infoLog(docInfo.EventName, docInfo, string.Format("K3ToX9拦截器执行结束,结果：{0}", rltInfo.ToString()));
+                LogInfoHelp.infoLog(docInfo.EventName, docInfo, string.Format("K3ToX9拦截器执行结束,结果：{0}", rltFlag.ToString()));
             }
         }
 
@@ -346,11 +355,31 @@ namespace K3ToX9BillTransfer
                 using (SqlCommand sqlcommSEOutType = new SqlCommand(string.Format("select FTranType from SEOutStock where FInterID = {0}",
                     interID.ToString()), sqlconn))
                 {
-                    Object objStockTable = sqlcommSEOutType.ExecuteScalar();
+                    Object objSEOutType = sqlcommSEOutType.ExecuteScalar();
 
-                    if (objStockTable != null && !String.IsNullOrEmpty(objStockTable.ToString()))
+                    if (objSEOutType != null && !String.IsNullOrEmpty(objSEOutType.ToString()))
                     {
-                        iTransType = Convert.ToInt32(objStockTable.ToString());
+                        iTransType = Convert.ToInt32(objSEOutType.ToString());
+                    }
+                }
+            }
+            return iTransType;
+        }
+
+        private int getPOInBillType(string k3ConnectString, long interID)
+        {
+            int iTransType = 72;
+            using (SqlConnection sqlconn = new SqlConnection(k3ConnectString))
+            {
+                sqlconn.Open();
+                using (SqlCommand sqlcommPOInType = new SqlCommand(string.Format("select FTranType from POInstock where FInterID = {0}",
+                    interID.ToString()), sqlconn))
+                {
+                    Object objPOInType = sqlcommPOInType.ExecuteScalar();
+
+                    if (objPOInType != null && !String.IsNullOrEmpty(objPOInType.ToString()))
+                    {
+                        iTransType = Convert.ToInt32(objPOInType.ToString());
                     }
                 }
             }
