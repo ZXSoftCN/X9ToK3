@@ -606,6 +606,152 @@ namespace K3ToX9SqlCRL
             }
         }
 
+
+        //特别注意：触发器虽定义为For Update，但insert时也会触发。
+        [Microsoft.SqlServer.Server.SqlTrigger(Name = @"zz_tr_IcStock_FirstCheck", Target = "IcStockbill", Event = "FOR UPDATE")]
+        public static void trICStockX9FirstCheck()
+        {
+            string billCode = string.Empty;
+            long interID = 0L;
+            int iROB = 1;
+            long lTransType = 0L;
+            int insFFirstChecker, delFFirstChecker;
+            bool bCheckTriggerCol = false;
+            string strX9No = string.Empty;
+            SqlTriggerContext triggContext = SqlContext.TriggerContext;
+            SqlPipe pipe = SqlContext.Pipe;
+            SqlDataReader reader;
+            initialConfig();
+
+            //pipe.Send(System.Enum.GetName(typeof(LOG_TYPE), ConfigLogType));
+
+            #region 只有出入库单一级审核人变化时才触发
+            using (SqlConnection connection = new SqlConnection(@"context connection=true"))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand(@"SELECT * FROM INSERTED;", connection);
+                reader = command.ExecuteReader();
+                reader.Read();
+                //虽reader不为null，但HasRows为false时，调用reader方法或属性会出现NullReferenceException异常。
+                if (reader == null || reader.HasRows == false)
+                {
+                    return;
+                }
+
+                for (int columnNumber = 0; columnNumber < triggContext.ColumnCount; columnNumber++)
+                {
+                    try
+                    {
+                        if (triggContext.IsUpdatedColumn(columnNumber) && reader.GetName(columnNumber).Equals("FMultiCheckLevel1", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            bCheckTriggerCol = true;
+                        }
+                    }
+                    catch (NullReferenceException ex)
+                    {
+                        continue;
+                    }
+
+                    //pipe.Send("Updated column "
+                    //   + reader.GetName(columnNumber) + "? "
+                    //   + triggContext.IsUpdatedColumn(columnNumber).ToString());
+                }
+                pipe.Send(bCheckTriggerCol.ToString());
+                if (!bCheckTriggerCol)
+                {
+                    return;
+                }
+                billCode = (string)reader["FBillNo"].ToString();
+                interID = Convert.ToInt64(reader["FInterID"].ToString());
+                iROB = Convert.ToInt32(reader["FROB"].ToString());
+                lTransType = Convert.ToInt64(reader["FTranType"].ToString());
+                strX9No = (string)reader["X9NO"].ToString();
+                insFFirstChecker = Convert.ToInt32(reader["FMultiCheckLevel1"] == null
+                    || string.IsNullOrEmpty(reader["FMultiCheckLevel1"].ToString()) ? "0" : reader["FMultiCheckLevel1"].ToString());
+                reader.Close();
+            }
+
+            #endregion
+
+            using (SqlConnection connection = new SqlConnection(@"context connection=true"))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand(@"SELECT * FROM DELETED;", connection);
+                reader = command.ExecuteReader();
+                reader.Read();
+                if (reader == null || reader.HasRows == false)
+                {
+                    return;
+                }
+                delFFirstChecker = Convert.ToInt32(reader["FMultiCheckLevel1"] == null 
+                    || string.IsNullOrEmpty(reader["FMultiCheckLevel1"].ToString()) ? "0" : reader["FMultiCheckLevel1"].ToString());
+                reader.Close();
+            }
+            #region 一级审核时
+            if (delFFirstChecker == 0 && insFFirstChecker > 0)
+            {
+                K3DataParaInfo docInfo = new K3DataParaInfo()
+                {
+                    BillCode = billCode,
+                    InterID = interID,
+                    EntryID = 0,
+                    TransType = lTransType,
+                    ROB = iROB,
+                    CurrentUser = "X9Validator",
+                    X9BillType = ContrastK3TransType(lTransType,iROB),
+                    EventName = "FirstApprovedAfter",
+                    Data = strX9No,
+                };
+                if (!basicHandle(docInfo))
+                {
+                    try
+                    {
+                        // Get the current transaction and roll it back.
+                        Transaction trans = Transaction.Current;
+                        trans.Rollback();
+                    }
+                    catch (SqlException ex)
+                    {
+                        //throw new Exception("X9系统异常");
+                        return;
+                    }
+
+                }
+            }
+            #endregion
+            #region 一级反审核时
+            if (delFFirstChecker > 0 && insFFirstChecker == 0)
+            {
+                K3DataParaInfo docInfo = new K3DataParaInfo()
+                {
+                    BillCode = billCode,
+                    InterID = interID,
+                    EntryID = 0,
+                    TransType = lTransType,
+                    ROB = iROB,
+                    CurrentUser = "X9Validator",
+                    X9BillType = ContrastK3TransType(lTransType, iROB),
+                    EventName = "UnFirstApprovedAfter",
+                    Data = strX9No,
+                };
+                if (!basicHandle(docInfo))
+                {
+                    try
+                    {
+                        // Get the current transaction and roll it back.
+                        
+                        Transaction trans = Transaction.Current;
+                        trans.Rollback();
+                    }
+                    catch (SqlException ex)
+                    {
+                        return;
+                    }
+                }
+            }
+            #endregion
+        }
+
         //基础缺省处理事件方法。
         private static bool basicHandle(K3DataParaInfo docInfo)
         {
@@ -613,6 +759,8 @@ namespace K3ToX9SqlCRL
             bool bRlt = true;
             try
             {
+                //WriteInfoToLogFile(string.Format("进入基类{0}事件响应", docInfo.EventName), LOG_TYPE.LOG_DEBUG);
+
                 debugLogger(docInfo, string.Format("进入基类{0}事件响应", docInfo.EventName));
                 K3InterceptConfig itemConfig = validateBusinessEnable(docInfo);
                 //K3InterceptConfig itemConfig = new K3InterceptConfig()
@@ -651,6 +799,7 @@ namespace K3ToX9SqlCRL
             }
             catch (Exception ex)
             {
+                pipe.Send(ex.Message);
                 infoLogger(docInfo, string.Format("执行基类缺省拦截处理：{0}事件。异常：{1}", docInfo.EventName, ex.Message));
                 bRlt = false;
             }
@@ -670,6 +819,7 @@ namespace K3ToX9SqlCRL
             {
                 return bRlt;
             }
+
             using (SqlConnection sqlconn = new SqlConnection(@"context connection=true"))
             {
                 sqlconn.Open();
@@ -681,8 +831,7 @@ namespace K3ToX9SqlCRL
                         return bRlt;
                     }
                 }
-
-                using (SqlCommand sqlcommKeyExists = new SqlCommand(string.Format("select 1 from sys.columns where [object_id] = object_id('{0}') and name = '{1}'", itemConfig.ConditionTable, itemConfig.ConditionField), sqlconn))
+                using (SqlCommand sqlcommKeyExists = new SqlCommand(string.Format("select 1 from sys.columns where [object_id] = object_id('{0}') and name = '{1}'", itemConfig.ConditionTable, itemConfig.KeyField), sqlconn))
                 {
                     Object objIsExists = sqlcommKeyExists.ExecuteScalar();
                     if (objIsExists == null || Convert.ToInt32(objIsExists.ToString()) != 1)
@@ -691,7 +840,13 @@ namespace K3ToX9SqlCRL
                     }
                 }
 
-                using (SqlCommand sqlcommCondition = new SqlCommand(string.Format("select isnull({1},'Y') from {0} where {2} = {3}", itemConfig.ConditionTable, itemConfig.ConditionField, itemConfig.KeyField, docInfo.InterID.ToString()), sqlconn))
+                string strExcludedValue = "N";
+                if (!string.IsNullOrEmpty(itemConfig.ExcludedValue))
+                {
+                    strExcludedValue = itemConfig.ExcludedValue;
+                }
+                
+                using (SqlCommand sqlcommCondition = new SqlCommand(string.Format("select isnull({1},'1') from {0} where {2} = {3}", itemConfig.ConditionTable, itemConfig.ConditionField, itemConfig.KeyField, docInfo.InterID.ToString()), sqlconn))
                 {
                     Object objValue = sqlcommCondition.ExecuteScalar();
                     if (objValue == null)
@@ -700,9 +855,7 @@ namespace K3ToX9SqlCRL
                     }
                     else
                     {
-                        if (string.Equals("N", objValue.ToString(), StringComparison.OrdinalIgnoreCase)
-                            || string.Equals("否", objValue.ToString(), StringComparison.OrdinalIgnoreCase)
-                            || string.Equals("false", objValue.ToString(), StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(strExcludedValue, objValue.ToString(), StringComparison.OrdinalIgnoreCase))
                         {
                             bRlt = false;
                         }
@@ -777,6 +930,11 @@ namespace K3ToX9SqlCRL
                     //}
                     return rltInfo;
                 }
+                else
+                {
+                    docInfo.Data = "X9服务未开启或执行返回为空字符";
+                    cacheDocInfo(docInfo, busiConfig);
+                }
                 return null;
             }
             catch (Exception ex)
@@ -844,24 +1002,27 @@ namespace K3ToX9SqlCRL
         {
             try
             {
-                docInfo.Data = logMsg;
-                using (SqlConnection sqlconn = new SqlConnection(@"context connection=true"))
-                {
-                    sqlconn.Open();
-                    using (SqlCommand sqlcommCache = new SqlCommand("zz_pr_X9ToK3Log_Save", sqlconn))
+                //if (string.IsNullOrEmpty(docInfo.Data))
+                //{
+                    docInfo.Data = logMsg;
+                    using (SqlConnection sqlconn = new SqlConnection(@"context connection=true"))
                     {
-                        sqlcommCache.CommandType = CommandType.StoredProcedure;
-                        string strDocInfo = XmlSerialize<K3DataParaInfo>(docInfo, Encoding.Unicode);
-                        SqlParameter sqlparamDocInfo = new SqlParameter("@DocInfo", SqlDbType.Xml);
-                        sqlparamDocInfo.Value = strDocInfo;
-                        SqlParameter sqlparamType = new SqlParameter("@Type", SqlDbType.NVarChar);
-                        sqlparamType.Value = System.Enum.GetName(typeof(LOG_TYPE), ConfigLogType);
-                        sqlcommCache.Parameters.Add(sqlparamDocInfo);
-                        sqlcommCache.Parameters.Add(sqlparamType);
+                        sqlconn.Open();
+                        using (SqlCommand sqlcommCache = new SqlCommand("zz_pr_X9ToK3Log_Save", sqlconn))
+                        {
+                            sqlcommCache.CommandType = CommandType.StoredProcedure;
+                            string strDocInfo = XmlSerialize<K3DataParaInfo>(docInfo, Encoding.Unicode);
+                            SqlParameter sqlparamDocInfo = new SqlParameter("@DocInfo", SqlDbType.Xml);
+                            sqlparamDocInfo.Value = strDocInfo;
+                            SqlParameter sqlparamType = new SqlParameter("@Type", SqlDbType.NVarChar);
+                            sqlparamType.Value = System.Enum.GetName(typeof(LOG_TYPE), ConfigLogType);
+                            sqlcommCache.Parameters.Add(sqlparamDocInfo);
+                            sqlcommCache.Parameters.Add(sqlparamType);
 
-                        sqlcommCache.ExecuteNonQuery();
+                            sqlcommCache.ExecuteNonQuery();
+                        }
                     }
-                }
+                //}
             }
             catch (Exception ex)
             {
@@ -870,6 +1031,52 @@ namespace K3ToX9SqlCRL
                 throw new Exception(string.Format("{0}\t日志存储异常：{1}", Environment.NewLine, ex.Message), ex);
             }
         }
+
+        /// <summary>
+        /// 信息写入日志
+        /// </summary>
+        /// <param name="strMsg"></param>
+        //private static void WriteInfoToLogFile(string strLogInfo, LOG_TYPE logType)
+        //{
+        //    SqlPipe pipe = SqlContext.Pipe;
+        //    //获取运行程序的路径
+        //    string logFileName = (DateTime.Now.Year).ToString() + '-'
+        //        + (DateTime.Now.Month).ToString() + '-' + (DateTime.Now.Day).ToString() + "_Log.log";
+        //    string logFilePath = strPath + "logFile\\";
+        //    pipe.Send(logFileName);
+        //    try
+        //    {
+        //        if (!Directory.Exists(logFilePath))
+        //        {
+        //            Directory.CreateDirectory(logFilePath);
+        //        }
+        //        logFilePath = logFilePath + logFileName;
+
+        //        StreamWriter LogFile = new StreamWriter(logFilePath, true);//文件保存位置
+        //        switch (logType)
+        //        {
+        //            case LOG_TYPE.LOG_DEBUG:
+        //                {
+        //                    strLogInfo = String.Format("/*************************/" + Environment.NewLine
+        //                        + "【调试日志】:{0}" + Environment.NewLine
+        //                        + " {1} ", DateTime.Now.ToString(), strLogInfo);
+        //                }
+        //                break;
+        //            default:
+        //                {
+        //                    strLogInfo = String.Format("/*************************/" + Environment.NewLine
+        //                    + "【标准日志】:{0}" + Environment.NewLine + " {1} ", DateTime.Now.ToString(), strLogInfo);
+        //                }
+        //                break;
+        //        }
+        //        LogFile.WriteLine(strLogInfo);
+        //        LogFile.Close();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        pipe.Send(ex.Message);
+        //    }
+        //}
 
         private static void initialConfig()
         {
@@ -919,6 +1126,29 @@ namespace K3ToX9SqlCRL
             }
 
             return busiConfig; ;
+        }
+
+        public static int ContrastK3TransType(long _transtype, int _rob)
+        {
+            string K3TypeFormat = "{0}({1})";
+            List<KeyValuePair<string, int>> K3TransTypeToX9BillType = new List<KeyValuePair<string, int>>();
+
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(strConfig);
+
+            XmlNodeList lstNode = xmlDoc.GetElementsByTagName("K3TransTypeToX9BillType");
+            foreach (XmlNode item in lstNode)
+            {
+                string keyFormat = string.Format(K3TypeFormat, item.Attributes[0].Value, item.Attributes[1].Value);
+                K3TransTypeToX9BillType.Add(new KeyValuePair<string, int>(keyFormat, Convert.ToInt32(item.FirstChild.InnerText)));
+            }
+            
+            string k3BillKey = string.Format(K3TypeFormat, _transtype, _rob);
+            if (K3TransTypeToX9BillType.Exists(k => k.Key == k3BillKey))
+            {
+                return K3TransTypeToX9BillType.Find(t => t.Key == k3BillKey).Value;
+            }
+            return 0;
         }
 
         public static string XmlSerialize<T>(T obj, Encoding encoding)

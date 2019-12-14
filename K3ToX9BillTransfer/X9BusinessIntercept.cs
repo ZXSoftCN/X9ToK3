@@ -133,21 +133,27 @@ namespace K3ToX9BillTransfer
                     //}
                     return rltInfo;
                 }
-                return null;
+                else
+                {
+                    docInfo.Data = "X9服务未开启或执行返回为空字符";
+                    cacheDocInfo(docInfo, busiConfig);
+                }
             }
             catch (Exception ex)
             {
                 //LogInfoHelp.infoLog(eventName, docInfo, string.Format("调用X9系统服务时，异常：{0}", ex.Message));
                 docInfo.Data = ex.Message;
                 cacheDocInfo(docInfo, busiConfig);
-                throw new Exception(string.Format("调用X9系统服务时，{0}", ex.Message),ex);
+                //throw new Exception(string.Format("调用X9系统服务时，{0}", ex.Message),ex);
             }
+            return null;
         }
 
         private void cacheDocInfo(K3DataParaInfo docInfo, K3InterceptConfig busiConfig)
         {
             try
             {
+                LogInfoHelp.debugLog(string.Empty, docInfo, "进入缓存服务中断数据。");
                 using (SqlConnection sqlconn = new SqlConnection(ServiceConfig.Instance.K3ConnectString))
                 {
                     sqlconn.Open();
@@ -168,10 +174,12 @@ namespace K3ToX9BillTransfer
             }
             catch (Exception ex)
             {
+                LogInfoHelp.debugLog(string.Empty, docInfo, string.Format("进入缓存服务中断数据,发生异常：{0}",ex.Message));
                 //throw new RankException(string.Format("暂存DocInfo存储异常：{0}", string.Empty), ex);
                 //MessageBox.Show(string.Format("{0}\t暂存DocInfo存储异常：{1}", Environment.NewLine, ex.Message));
                 throw new Exception(string.Format("{0}\t暂存DocInfo存储异常：{1}", Environment.NewLine, ex.Message),ex);
             }
+            throw new Exception(string.Format("调用X9系统服务时，{0}", docInfo.Data));
         }
         
     }

@@ -41,6 +41,9 @@ namespace K3ToX9SqlCRL
         public string KeyField { get; set; }//判断当前数据是否进行X9系统服务校验的后台表主键列名
 
         [XmlAttribute]
+        public string ExcludedValue { get; set; }//判断当前数据不进行X9系统服务校验的验证值
+
+        [XmlAttribute]
         public string Notes { get; set; }//描述
 
         [XmlAttribute]

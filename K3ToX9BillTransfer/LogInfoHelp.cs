@@ -30,7 +30,13 @@ namespace K3ToX9BillTransfer
         /// </summary>
         public void CreateLogFile()
         {
-            //获取运行程序的路径
+            //获取运行程序的路径。
+            //【作废】避免在singleton中日志文件名一直使用初次加载时日期名，而改用在WriteInfoToLogFile中获取最新的日志。
+            //getNewLogName();
+        }
+
+        private void refreshLogName()
+        {
             string logFileName = (DateTime.Now.Year).ToString() + '-'
                 + (DateTime.Now.Month).ToString() + '-' + (DateTime.Now.Day).ToString() + "_Log.log";
             string logFilePath = CommonFunc.strPath + "logFile\\";
@@ -47,6 +53,7 @@ namespace K3ToX9BillTransfer
         /// <param name="strMsg"></param>
         private void WriteInfoToLogFile(string strLogInfo, LOG_TYPE logType)
         {
+            refreshLogName();
             LogFile = new StreamWriter(LogFilePath, true);//文件保存位置
             switch (logType)
             {

@@ -11,7 +11,6 @@ E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\K3ToX9BillTransfer\bin\Debug
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\K3ToX9BillTransfer\bin\Debug\K3ToX9BillTransfer.dll.config
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\K3ToX9BillTransfer\bin\Debug\K3ToX9BillTransfer.dll
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\K3ToX9BillTransfer\bin\Debug\K3ToX9BillTransfer.pdb
-E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\K3ToX9BillTransfer\obj\Debug\K3ToX9BillTransfer.csprojResolveAssemblyReference.cache
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\K3ToX9BillTransfer\obj\Debug\K3ToX9BillTransfer.UI.frmMessageSingle.resources
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\K3ToX9BillTransfer\obj\Debug\K3ToX9BillTransfer.csproj.GenerateResource.Cache
 E:\MyProject\轩辕天恩\K3ToX9BillTransfer\X9ToK3\K3ToX9BillTransfer\obj\Debug\K3ToX9BillTransfer.dll

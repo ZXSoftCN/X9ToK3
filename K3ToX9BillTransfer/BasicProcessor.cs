@@ -282,6 +282,8 @@ namespace K3ToX9BillTransfer
 
         /// <summary>
         /// 所单据表头增加了“是否进X9”字段，并在zz_t_K3InterceptConfig配置表设置好对应字段则会进行过滤调用。
+        /// 对过滤字段的设定，可能是以枚举方式，这样造成保存到数据库后台的值是不可预定。所以后续可考虑加入ExcludedValue字段
+        /// 保存“排除调用服务”的字段值，如N、false或其他值。
         /// </summary>
         /// <param name="itemConfig"></param>
         /// <param name="docInfo"></param>
@@ -305,13 +307,19 @@ namespace K3ToX9BillTransfer
                     }
                 }
 
-                using (SqlCommand sqlcommKeyExists = new SqlCommand(string.Format("select 1 from sys.columns where [object_id] = object_id('{0}') and name = '{1}'", itemConfig.ConditionTable, itemConfig.ConditionField), sqlconn))
+                using (SqlCommand sqlcommKeyExists = new SqlCommand(string.Format("select 1 from sys.columns where [object_id] = object_id('{0}') and name = '{1}'", itemConfig.ConditionTable, itemConfig.KeyField), sqlconn))
                 {
                     Object objIsExists = sqlcommKeyExists.ExecuteScalar();
                     if (objIsExists == null || Convert.ToInt32(objIsExists.ToString()) != 1)
                     {
                         return bRlt;
                     }
+                }
+
+                string strExcludedValue = "N";
+                if (!string.IsNullOrEmpty(itemConfig.ExcludedValue))
+                {
+                    strExcludedValue = itemConfig.ExcludedValue;
                 }
 
                 using (SqlCommand sqlcommCondition = new SqlCommand(string.Format("select isnull({1},'Y') from {0} where {2} = {3}", itemConfig.ConditionTable, itemConfig.ConditionField,itemConfig.KeyField,docInfo.InterID.ToString()), sqlconn))
@@ -323,9 +331,7 @@ namespace K3ToX9BillTransfer
                     }
                     else
                     {
-                        if (string.Equals("N",objValue.ToString(),StringComparison.OrdinalIgnoreCase) 
-                            || string.Equals("否",objValue.ToString(),StringComparison.OrdinalIgnoreCase)
-                            || string.Equals("false", objValue.ToString(), StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(strExcludedValue, objValue.ToString(), StringComparison.OrdinalIgnoreCase))
                         {
                             bRlt = false;
                         }
